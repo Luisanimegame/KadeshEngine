@@ -415,6 +415,7 @@ class PlayState extends MusicBeatState
 					add(sprite);
 					}
 				}
+				}
 			};
 		}
 		
