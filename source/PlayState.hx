@@ -379,12 +379,13 @@ class PlayState extends MusicBeatState
 		
 		var stageData:StageFile = StageData.getStageFile(curStage);
 		if (stageData == null) {
-		    stageDataData = {
+		    stageData = {
 		        directory: "",
 		        defaultZoom: 0.9,
 		        bf: [770, 100],
 		        girl: [400, 130],
 		        dad: [100, 100],
+		
 		        bf_cam: [0, 0],
 		        dad_cam: [0, 0],
 		
@@ -392,6 +393,8 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
+		var frontSprites:Array<Dynamic> = [];
+
 		for (obj in stageData.objects) {
 		    var sprite:FlxSprite = new FlxSprite(obj.x, obj.y);
 		
@@ -425,6 +428,8 @@ class PlayState extends MusicBeatState
 		
 		    if (obj.front == null) {
 		        add(sprite);
+		    } else {
+		        frontSprites.push({ sprite: sprite, front: obj.front });
 		    }
 		}
 		
@@ -501,23 +506,27 @@ class PlayState extends MusicBeatState
 
 		if (!PlayStateChangeables.Optimize)
 		{
-			add(gfGroup);
-			
-			if (obj.front == 'gf'){
-			add(sprite);
-			}
-
-			add(dadGroup);
-			
-			if (obj.front == 'dad'){
-			add(sprite);
-			}
-			
-			add(boyfriendGroup);
-			
-			if (obj.front == 'bf'){
-			add(sprite);
-			}
+		    add(gfGroup);
+		    add(dadGroup);
+		    add(boyfriendGroup);
+		
+		    for (entry in frontSprites)
+		    {
+		        var s:FlxSprite = entry.sprite;
+		        var f:String = entry.front;
+		
+		        switch (f)
+		        {
+		            case 'gf':
+		                add(s);
+		            case 'dad':
+		                add(s);
+		            case 'bf':
+		                add(s);
+		            default:
+		                // não tem
+		        }
+		    }
 		}
 
 
