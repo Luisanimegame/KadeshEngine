@@ -393,9 +393,11 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
+		// Ensure stageData.objects is treated as an Array<Dynamic> before iterating
 		var frontSprites:Array<Dynamic> = [];
-
-		for (obj in stageData.objects) {
+		var objectsArray:Array<Dynamic> = if (stageData.objects == null) [] else (cast stageData.objects:Array<Dynamic>);
+		
+		for (obj in objectsArray) {
 		    var sprite:FlxSprite = new FlxSprite(obj.x, obj.y);
 		
 		    if (obj.graphic != null && obj.graphic.length > 0) {
@@ -548,7 +550,7 @@ class PlayState extends MusicBeatState
 		var doof:DialogueBox = new DialogueBox(false, dialogue);
 		// doof.x += 70;
 		// doof.y = FlxG.height * 0.5;
-		doof.scrollFactor.set();
+		doof.scrollFactor.set(1, 1);
 		doof.finishThing = startCountdown;
 
 		Conductor.songPosition = -5000;
