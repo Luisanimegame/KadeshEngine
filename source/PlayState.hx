@@ -376,9 +376,6 @@ class PlayState extends MusicBeatState
 				dialogue = CoolUtil.coolTextFile(Paths.txt('thorns/thornsDialogue'));
 		}
 		
-		if (!PlayStateChangeables.Optimize)
-		{
-		
 		var stageData:StageFile = StageData.getStageFile(curStage);
 		if(stageData == null) {
 			stageData = {
@@ -415,10 +412,7 @@ class PlayState extends MusicBeatState
 					add(sprite);
 					}
 				}
-				}
 			};
-		}
-		
 		}
 		
 		defaultCamZoom = stageData.defaultZoom;
