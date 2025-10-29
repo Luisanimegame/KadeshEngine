@@ -404,7 +404,7 @@ class PlayState extends MusicBeatState
 		    trace("ERRO: stageData.objects não é um array válido!");
 		}
 		
-		for (obj:Dynamic in objectsArray) {  // Agora é seguro iterar
+		for (obj in objectsArray) {  // Agora é seguro iterar
 		    var sprite:FlxSprite = new FlxSprite(Reflect.field(obj, 'x'), Reflect.field(obj, 'y'));
 		
 		    if (Reflect.hasField(obj, 'graphic') && Reflect.field(obj, 'graphic').length > 0) {
