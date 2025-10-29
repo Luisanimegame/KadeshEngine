@@ -5,6 +5,7 @@ import animateatlas.AtlasFrameMaker;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
 import lime.utils.Assets;
+import flixel.graphics.FlxGraphic;
 import openfl.utils.Assets as OpenFlAssets;
 
 using StringTools;
