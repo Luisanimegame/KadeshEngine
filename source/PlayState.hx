@@ -393,45 +393,52 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		// Ensure stageData.objects is treated as an Array<Dynamic> before iterating
 		var frontSprites:Array<Dynamic> = [];
-		var objectsArray:Array<Dynamic> = if (stageData.objects == null) [] else (cast stageData.objects:Array<Dynamic>);
+		var objectsArray:Array<Dynamic> = [];
 		
-		for (obj in objectsArray) {
-		    var sprite:FlxSprite = new FlxSprite(obj.x, obj.y);
+		if (Std.is(stageData.objects, Array)) {
+		    objectsArray = cast stageData.objects;
+		} else if (stageData.objects == null) {
+		    objectsArray = [];
+		} else {
+		    trace("ERRO: stageData.objects não é um array válido!");
+		}
 		
-		    if (obj.graphic != null && obj.graphic.length > 0) {
-		        sprite.loadGraphic(Paths.image('stages/' + obj.graphic));
+		for (obj:Dynamic in objectsArray) {  // Agora é seguro iterar
+		    var sprite:FlxSprite = new FlxSprite(Reflect.field(obj, 'x'), Reflect.field(obj, 'y'));
+		
+		    if (Reflect.hasField(obj, 'graphic') && Reflect.field(obj, 'graphic').length > 0) {
+		        sprite.loadGraphic(Paths.image('stages/' + Reflect.field(obj, 'graphic')));
 		    }
 		
 		    sprite.scrollFactor.set(
-		        obj.scrollX != null ? obj.scrollX : 1.0,
-		        obj.scrollY != null ? obj.scrollY : 1.0
+		        Reflect.hasField(obj, 'scrollX') ? Reflect.field(obj, 'scrollX') : 1.0,
+		        Reflect.hasField(obj, 'scrollY') ? Reflect.field(obj, 'scrollY') : 1.0
 		    );
 		
-		    sprite.antialiasing = obj.antialiasing != null ? obj.antialiasing : true;
-		    sprite.active = obj.active != null ? obj.active : false;
+		    sprite.antialiasing = Reflect.hasField(obj, 'antialiasing') ? Reflect.field(obj, 'antialiasing') : true;
+		    sprite.active = Reflect.hasField(obj, 'active') ? Reflect.field(obj, 'active') : false;
 		
-		    if (obj.scale != null) {
-		        sprite.scale.set(obj.scale, obj.scale);
+		    if (Reflect.hasField(obj, 'scale')) {
+		        sprite.scale.set(Reflect.field(obj, 'scale'), Reflect.field(obj, 'scale'));
 		        sprite.updateHitbox();
 		    }
 		
-		    if (obj.animations != null && obj.animations.length > 0) {
-		        var tex = Paths.getSparrowAtlas('stages/' + obj.graphic);
+		    if (Reflect.hasField(obj, 'animations') && Reflect.field(obj, 'animations').length > 0) {
+		        var tex = Paths.getSparrowAtlas('stages/' + Reflect.field(obj, 'graphic'));
 		        sprite.frames = tex;
-		        for (anim in obj.animations) {
-		            sprite.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		        for (anim in cast(Reflect.field(obj, 'animations'), Array<Dynamic>)) {
+		            sprite.animation.addByPrefix(Reflect.field(anim, 'name'), Reflect.field(anim, 'prefix'), Reflect.field(anim, 'fps'), Reflect.field(anim, 'loop'));
 		        }
-		        if (obj.defaultAnim != null) {
-		            sprite.animation.play(obj.defaultAnim);
+		        if (Reflect.hasField(obj, 'defaultAnim')) {
+		            sprite.animation.play(Reflect.field(obj, 'defaultAnim'));
 		        }
 		    }
 		
-		    if (obj.front == null) {
+		    if (!Reflect.hasField(obj, 'front') || Reflect.field(obj, 'front') == null) {
 		        add(sprite);
 		    } else {
-		        frontSprites.push({ sprite: sprite, front: obj.front });
+		        frontSprites.push({ sprite: sprite, front: Reflect.field(obj, 'front') });
 		    }
 		}
 		
