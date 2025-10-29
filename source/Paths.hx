@@ -16,6 +16,7 @@ class Paths
 
 	static var currentLevel:String;
 
+	public static var localTrackedAssets:Array<String> = [];
 	static public function setCurrentLevel(name:String)
 	{
 		currentLevel = name.toLowerCase();
