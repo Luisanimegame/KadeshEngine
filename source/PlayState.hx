@@ -377,42 +377,60 @@ class PlayState extends MusicBeatState
 		}
 		
 		var stageData:StageFile = StageData.getStageFile(curStage);
-		if(stageData == null) {
-			stageData = {
-				directory: "",
-				defaultZoom: 0.9,
-
-				bf: [770, 100],
-				girl: [400, 130],
-				dad: [100, 100],
-				
-				bf_cam: [0, 0],
-				dad_cam: [0, 0],
-				
-				for (obj in stageData.objects)
-				{
-					var sprite = new FlxSprite(obj.x, obj.y).loadGraphic(Paths.image('stages/' + obj.graphic));
-					sprite.scrollFactor.set(obj.scrollX, obj.scrollY);
-					sprite.antialiasing = obj.antialiasing;
-					sprite.active = obj.active;
-					if (obj.scale != null)
-						sprite.scale.set(obj.scale, obj.scale);
-					if (obj.animations != null && obj.animations.length > 0)
-					{
-						var tex = Paths.getSparrowAtlas(obj.graphic);
-						sprite.frames = tex;
-						for (anim in obj.animations)
-						{
-							sprite.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-						}
-						if (obj.defaultAnim != null)
-							sprite.animation.play(obj.defaultAnim);
-					}
-					if (obj.front == null){
-					add(sprite);
-					}
-				}
-			};
+		if (stageData == null) {
+		    stageData = {
+		        directory: "",
+		        defaultZoom: 0.9,
+		
+		        bf: [770, 100],
+		        girl: [400, 130],
+		        dad: [100, 100],
+		        
+		        bf_cam: [0, 0],
+		        dad_cam: [0, 0],
+		        
+		        objects: [],
+		        hide_gf: false
+		    };
+		
+		    var objects:Array<Dynamic> = [
+		    ];
+		
+		    for (obj in objects) {
+		        var sprite = new FlxSprite(obj.x, obj.y);
+		        
+		        if (obj.graphic != null && obj.graphic.length > 0) {
+		            sprite.loadGraphic(Paths.image('stages/' + obj.graphic));
+		        }
+		
+		        sprite.scrollFactor.set(
+		            obj.scrollX != null ? obj.scrollX : 1,
+		            obj.scrollY != null ? obj.scrollY : 1
+		        );
+		
+		        sprite.antialiasing = obj.antialiasing != null ? obj.antialiasing : true;
+		        sprite.active = obj.active != null ? obj.active : false;
+		
+		        if (obj.scale != null) {
+		            sprite.scale.set(obj.scale, obj.scale);
+		            sprite.updateHitbox();
+		        }
+		
+		        if (obj.animations != null && obj.animations.length > 0) {
+		            var tex = Paths.getSparrowAtlas('stages/' + obj.graphic);
+		            sprite.frames = tex;
+		            for (anim in obj.animations) {
+		                sprite.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		            }
+		            if (obj.defaultAnim != null) {
+		                sprite.animation.play(obj.defaultAnim);
+		            }
+		        }
+		        if (obj.front == null) {
+		            add(sprite);
+		    }
+		
+		    stageData.objects = []; // ou mantenha os sprites em um grupo separado se necessário
 		}
 		
 		defaultCamZoom = stageData.defaultZoom;
