@@ -1,5 +1,4 @@
 package animateatlas;
-
 import flixel.util.FlxDestroyUtil;
 import openfl.geom.Rectangle;
 import flixel.math.FlxPoint;
@@ -14,135 +13,105 @@ import animateatlas.displayobject.SpriteMovieClip;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFrame;
-import flixel.graphics.frames.FlxFrame.FlxFrameCollectionType; // IMPORT CORRETO
 import flixel.util.FlxColor;
 
 using StringTools;
-
-class AtlasFrameMaker
+class AtlasFrameMaker extends FlxFramesCollection
 {
-    public static function construct(key:String, ?_excludeArray:Array<String> = null, ?noAntialiasing:Bool = false):FlxFramesCollection
-    {
-        var frameArray:Array<Array<FlxFrame>> = [];
+	//public static var widthoffset:Int = 0;
+	//public static var heightoffset:Int = 0;
+	//public static var excludeArray:Array<String>;
+	/**
+	
+	* Creates Frames from TextureAtlas(very early and broken ok) Originally made for FNF HD by Smokey and Rozebud
+	*
+	* @param   key                 The file path.
+	* @param   _excludeArray       Use this to only create selected animations. Keep null to create all of them.
+	*
+	*/
 
-        // Verifica formato antigo
-        if (Paths.fileExists('images/$key/spritemap1.json', TEXT))
-        {
-            trace("ERRO: Apenas spritemaps do Adobe Animate 2020+ (Animation.json + spritemap.json) são suportados.");
-            return null;
-        }
+	public static function construct(key:String,?_excludeArray:Array<String> = null, ?noAntialiasing:Bool = false):FlxFramesCollection
+	{
+		// widthoffset = _widthoffset;
+		// heightoffset = _heightoffset;
 
-        // Carrega JSONs
-        var animationData:AnimationData = null;
-        var atlasData:AtlasData = null;
-        try {
-            animationData = Json.parse(Paths.getTextFromFile('images/$key/Animation.json'));
-            var atlasText = Paths.getTextFromFile('images/$key/spritemap.json');
-            if (atlasText != null) atlasText = atlasText.replace("\uFEFF", "");
-            atlasData = Json.parse(atlasText);
-        }
-        catch (e:Dynamic) {
-            trace('Erro ao ler JSON do atlas: $key | $e');
-            return null;
-        }
+		var frameCollection:FlxFramesCollection;
+		var frameArray:Array<Array<FlxFrame>> = [];
 
-        // Carrega imagem
-        var graphic:FlxGraphic = Paths.image('$key/spritemap');
-        if (graphic == null || graphic.bitmap == null)
-        {
-            trace('Imagem não encontrada: $key/spritemap.png');
-            return null;
-        }
+		if (Paths.fileExists('images/$key/spritemap1.json', TEXT))
+		{
+			trace("Only Spritemaps made with Adobe Animate 2018 are supported");
+			return null;
+		}
 
-        // Cria animação
-        var ss = new SpriteAnimationLibrary(animationData, atlasData, graphic.bitmap);
-        var t:SpriteMovieClip = ss.createAnimation(noAntialiasing);
+		var animationData:AnimationData = Json.parse(Paths.getTextFromFile('images/$key/Animation.json'));
+		var atlasData:AtlasData = Json.parse(Paths.getTextFromFile('images/$key/spritemap.json').replace("\uFEFF", ""));
 
-        // Animações a incluir
-        if (_excludeArray == null || _excludeArray.length == 0)
-            _excludeArray = t.getFrameLabels();
+		var graphic:FlxGraphic = Paths.image('$key/spritemap');
+		var ss:SpriteAnimationLibrary = new SpriteAnimationLibrary(animationData, atlasData, graphic.bitmap);
+		var t:SpriteMovieClip = ss.createAnimation(noAntialiasing);
+		if(_excludeArray == null)
+		{
+			_excludeArray = t.getFrameLabels();
+			//trace('creating all anims');
+		}
+		trace('Creating: ' + _excludeArray);
 
-        trace('Criando animações: $_excludeArray');
+		frameCollection = new FlxFramesCollection(graphic, FlxFrameCollectionType.IMAGE);
+		for(x in _excludeArray)
+		{
+			frameArray.push(getFramesArray(t, x));
+		}
 
-        // Cria coleção → TIPO CORRETO
-        var framesCollection = new FlxFramesCollection(graphic, FlxFrameCollectionType.USER);
+		for(x in frameArray)
+		{
+			for(y in x)
+			{
+				frameCollection.pushFrame(y);
+			}
+		}
+		return frameCollection;
+	}
 
-        // Extrai frames
-        for (anim in _excludeArray)
-        {
-            var animFrames = getFramesArray(t, anim);
-            if (animFrames != null)
-                frameArray.push(animFrames);
-        }
+	@:noCompletion static function getFramesArray(t:SpriteMovieClip,animation:String):Array<FlxFrame>
+	{
+		var sizeInfo:Rectangle = new Rectangle(0, 0);
+		t.currentLabel = animation;
+		var bitMapArray:Array<BitmapData> = [];
+		var daFramez:Array<FlxFrame> = [];
+		var firstPass = true;
+		var frameSize:FlxPoint = new FlxPoint(0, 0);
 
-        // Adiciona todos os frames
-        for (animFrames in frameArray)
-        {
-            for (frame in animFrames)
-            {
-                framesCollection.pushFrame(frame);
-            }
-        }
+		for (i in t.getFrame(animation)...t.numFrames)
+		{
+			t.currentFrame = i;
+			if (t.currentLabel == animation)
+			{
+				sizeInfo = t.getBounds(t);
+				var bitmapShit:BitmapData = new BitmapData(Std.int(sizeInfo.width + sizeInfo.x), Std.int(sizeInfo.height + sizeInfo.y), true, 0);
+				bitmapShit.draw(t, null, null, null, null, true);
+				bitMapArray.push(bitmapShit);
 
-        // NÃO DESTROI t → gerenciado pela biblioteca
-        return framesCollection;
-    }
-
-    @:noCompletion
-    static function getFramesArray(t:SpriteMovieClip, animation:String):Array<FlxFrame>
-    {
-        if (t == null || animation == null) return [];
-
-        t.currentLabel = animation;
-        var bitmaps:Array<BitmapData> = [];
-        var frames:Array<FlxFrame> = [];
-        var first:Bool = true;
-        var frameSize:FlxPoint = FlxPoint.get();
-
-        var start = t.getFrame(animation);
-        if (start < 0) start = 0;
-
-        for (i in start...t.numFrames)
-        {
-            t.currentFrame = i;
-            if (t.currentLabel != animation) break;
-
-            var bounds = t.getBounds(t);
-            if (bounds.width <= 0 || bounds.height <= 0) continue;
-
-            var bmp = new BitmapData(Std.int(bounds.width + bounds.x), Std.int(bounds.height + bounds.y), true, 0);
-            bmp.draw(t, null, null, null, null, true);
-            bitmaps.push(bmp);
-
-            if (first)
-            {
-                frameSize.set(bmp.width, bmp.height);
-                first = false;
-            }
-        }
-
-        // Converte para FlxFrame
-        for (i in 0...bitmaps.length)
-        {
-            var bmp = bitmaps[i];
-            var graphic = FlxGraphic.fromBitmapData(bmp, false, null, false);
-            graphic.persist = true;
-            graphic.destroyOnNoUse = false;
-
-            var frame = new FlxFrame(graphic);
-            frame.parent = graphic;
-            frame.name = animation + '_' + i;
-            frame.sourceSize.set(frameSize.x, frameSize.y);
-            frame.frame = FlxRect.get(0, 0, bmp.width, bmp.height);
-            frames.push(frame);
-        }
-
-        // Limpa bitmaps
-        for (bmp in bitmaps)
-            if (bmp != null) bmp.dispose();
-        bitmaps = null;
-        frameSize.put();
-
-        return frames;
-    }
+				if (firstPass)
+				{
+					frameSize.set(bitmapShit.width,bitmapShit.height);
+					firstPass = false;
+				}
+			}
+			else break;
+		}
+		
+		for (i in 0...bitMapArray.length)
+		{
+			var b = FlxGraphic.fromBitmapData(bitMapArray[i]);
+			var theFrame = new FlxFrame(b);
+			theFrame.parent = b;
+			theFrame.name = animation + i;
+			theFrame.sourceSize.set(frameSize.x,frameSize.y);
+			theFrame.frame = new FlxRect(0, 0, bitMapArray[i].width, bitMapArray[i].height);
+			daFramez.push(theFrame);
+			//trace(daFramez);
+		}
+		return daFramez;
+	}
 }
