@@ -7,6 +7,8 @@ import openfl.utils.AssetType;
 import lime.utils.Assets;
 import openfl.utils.Assets as OpenFlAssets;
 
+using StringTools;
+
 class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
@@ -69,11 +71,11 @@ class Paths
 	}
 	
 	inline static public function formatToSongPath(path:String) {
-		var invalidChars = ~/[~&\\;:<>#]/;
-		var hideChars = ~/[.,'"%?!]/;
+    var invalidChars = ~/[~&\\;:<>#]/;
+    var hideChars = ~/[.,'"%?!]/;
 
-		var path = invalidChars.split(path.replace(' ', '-')).join("-");
-		return hideChars.split(path).join("").toLowerCase();
+    var path = invalidChars.split(StringTools.replace(path, ' ', '-')).join("-");
+    return hideChars.split(path).join("").toLowerCase();
 	}
 
 	inline static public function file(file:String, type:AssetType = TEXT, ?library:String)
@@ -146,14 +148,35 @@ class Paths
 		return 'songs:assets/songs/${songLowercase}/Inst.$SOUND_EXT';
 	}
 
-	inline static public function image(key:String, ?library:String)
+	inline static public function image(key:String, ?library:String):FlxGraphic
 	{
-		return getPath('images/$key.png', IMAGE, library);
+		// streamlined the assets process more
+		var returnAsset:FlxGraphic = returnGraphic(key, library);
+		return returnAsset;
 	}
 
 	inline static public function font(key:String)
 	{
 		return 'assets/fonts/$key';
+	}
+	
+	// completely rewritten asset loading? fuck!
+	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
+	public static function returnGraphic(key:String, ?library:String) {
+
+		var path = getPath('images/$key.png', IMAGE, library);
+		//trace(path);
+		if (OpenFlAssets.exists(path, IMAGE)) {
+			if(!currentTrackedAssets.exists(path)) {
+				var newGraphic:FlxGraphic = FlxG.bitmap.add(path, false, path);
+				newGraphic.persist = true;
+				currentTrackedAssets.set(path, newGraphic);
+			}
+			localTrackedAssets.push(path);
+			return currentTrackedAssets.get(path);
+		}
+		trace('oh no its returning null NOOOO');
+		return null;
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String)
