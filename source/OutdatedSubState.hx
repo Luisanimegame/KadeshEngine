@@ -25,23 +25,7 @@ class OutdatedSubState extends MusicBeatState
 		bg.setGraphicSize(Std.int(bg.width * 1.137));
 		add(bg);
 		
-		var txt:FlxText = new FlxText(0, 0, FlxG.width,
-			"Obrigada por instalar meu port!\n"
-			+ "Esse port foi feito com muito carinho!\n"
-			+ "Espero que você goste disso kkkk\nProvavel que nao.\n"
-			+ "Fique com os creditos de qualquer maneira\n"
-			+ "Port by GaboWuz\n"
-			+ "Controles by Idklool\n"
-			+ "Suporte Mp4 by FNF-BR\n"
-			+ "Para continuar e sair dessa tela, clique na tela!\n"
-			+ "..\n"
-			+ "...\n"
-			+ "..\n"
-			+ "...\n"
-			+ "..\n"
-			+ "...\n"
-			+ "Nao, eu nao vou portar outras versoes da kade engine.",
-			32);
+		var txt:FlxText = new FlxText(0, 0, FlxG.width, "Fuck, ta podendo desistir disso? vou chorar", 32);
 		
 		txt.setFormat("VCR OSD Mono", 32, FlxColor.fromRGB(200, 200, 200), CENTER);
 		txt.borderColor = FlxColor.BLACK;
