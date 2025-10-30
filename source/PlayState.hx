@@ -393,63 +393,28 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		var frontSprites:Array<{sprite:FlxSprite, front:Null<String>}> = [];
-		
-		var objects:Array<Dynamic> = [];
-		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
-		    objects = cast stageData.objects;
-		} else {
-		    trace('Stage objects inválido ou ausente para: $curStage');
-		}
-		
-		for (obj in objects) {
-		    var x:Float = Reflect.field(obj, 'x') ?? 0;
-		    var y:Float = Reflect.field(obj, 'y') ?? 0;
-		    var sprite = new FlxSprite(x, y);
-		
-		    var graphicName:String = Reflect.field(obj, 'graphic');
-		    if (graphicName != null && graphicName != '') {
-		        var hasAnims:Bool = Reflect.hasField(obj, 'animations') 
-		            && Std.isOfType(Reflect.field(obj, 'animations'), Array) 
-		            && (cast Reflect.field(obj, 'animations') : Array<Dynamic>).length > 0;
-		
-		        if (hasAnims) {
-		            sprite.frames = Paths.getSparrowAtlas('stages/' + graphicName);
-		            var anims:Array<Dynamic> = cast Reflect.field(obj, 'animations');
-		            for (anim in anims) {
-		                sprite.animation.addByPrefix(
-		                    Reflect.field(anim, 'name') ?? 'anim',
-		                    Reflect.field(anim, 'prefix') ?? '',
-		                    Reflect.field(anim, 'fps') ?? 24,
-		                    Reflect.field(anim, 'loop') ?? false
-		                );
-		            }
-		            var defaultAnim:String = Reflect.field(obj, 'defaultAnim');
-		            if (defaultAnim != null) sprite.animation.play(defaultAnim);
+		var frontList:Array<{spr:FlxSprite, front:String}> = [];
+
+		for (obj in stageData.objects) {
+		    var spr = new FlxSprite(obj.x, obj.y);
+		    if (obj.graphic != null && obj.graphic != "") {
+		        if (obj.animations != null && obj.animations.length > 0) {
+		            spr.frames = Paths.getSparrowAtlas('stages/' + obj.graphic);
+		            for (anim in obj.animations) spr.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		            if (obj.defaultAnim != null) spr.animation.play(obj.defaultAnim);
 		        } else {
-		            sprite.loadGraphic(Paths.image('stages/' + graphicName));
+		            spr.loadGraphic(Paths.image('stages/' + obj.graphic));
 		        }
 		    }
+		    spr.scrollFactor.set(obj.scrollX != null ? obj.scrollX : 1, obj.scrollY != null ? obj.scrollY : 1);
+		    spr.antialiasing = obj.antialiasing != false;
+		    spr.active = obj.active != false;
+		    if (obj.scale != null) { spr.scale.set(obj.scale, obj.scale); spr.updateHitbox(); }
 		
-		    sprite.scrollFactor.set(
-		        Reflect.field(obj, 'scrollX') ?? 1.0,
-		        Reflect.field(obj, 'scrollY') ?? 1.0
-		    );
-		    sprite.antialiasing = Reflect.field(obj, 'antialiasing') ?? true;
-		    sprite.active = Reflect.field(obj, 'active') ?? false;
-		
-		    var scale:Float = Reflect.field(obj, 'scale');
-		    if (scale != null) {
-		        sprite.scale.set(scale, scale);
-		        sprite.updateHitbox();
-		    }
-		
-		    var frontValue:Dynamic = Reflect.field(obj, 'front');
-		    if (frontValue == null || frontValue == false) {
-		        insert(0, sprite);
+		    if (obj.front == null || obj.front == false) {
+		        insert(0, spr);
 		    } else {
-		        var frontStr:String = Std.string(frontValue);
-		        frontSprites.push({ sprite: sprite, front: frontStr });
+		        frontList.push({spr: spr, front: Std.string(obj.front)});
 		    }
 		}
 		
@@ -533,19 +498,12 @@ class PlayState extends MusicBeatState
 		    add(dadGroup);
 		    add(boyfriendGroup);
 		
-		    for (entry in frontSprites) {
-		        var s:FlxSprite = entry.sprite;
-		        var f:String = entry.front;
-		
-		        switch (f) {
-		            case 'gf', 'girlfriend':
-		                insert(members.indexOf(gfGroup) + 1, s); // Logo após GF
-		            case 'dad', 'opponent':
-		                insert(members.indexOf(dadGroup) + 1, s); // Logo após Dad
-		            case 'bf', 'boyfriend':
-		                insert(members.indexOf(boyfriendGroup) + 1, s); // Logo após BF
-		            default:
-		                add(s); // No topo (fallback)
+		    for (f in frontList) {
+		        switch (f.front.toLowerCase()) {
+		            case 'gf', 'girlfriend': insert(members.indexOf(gfGroup)+1, f.spr);
+		            case 'dad', 'opponent': insert(members.indexOf(dadGroup)+1, f.spr);
+		            case 'bf', 'boyfriend': insert(members.indexOf(boyfriendGroup)+1, f.spr);
+		            default: add(f.spr);
 		        }
 		    }
 		}
