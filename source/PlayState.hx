@@ -393,55 +393,58 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		var frontList:Array<{spr:FlxSprite, front:String}> = [];
-
+		var rawObjects:Dynamic = stageData.objects;
 		var objects:Array<Dynamic> = [];
-		if (stageData.objects != null && Std.is(stageData.objects, Array)) {
-		    objects = cast stageData.objects;
+		
+		if (rawObjects != null && Std.isOfType(rawObjects, Array)) {
+		    objects = cast rawObjects;
 		} else {
-		    trace('No objects for ' + curStage);
+		    trace('No stage objects or invalid: ' + curStage);
 		}
 		
 		var frontList:Array<{spr:FlxSprite, front:String}> = [];
-
-		var objects:Array<Dynamic> = [];
-		if (stageData.objects != null && Std.is(stageData.objects, Array)) {
-		    objects = cast stageData.objects;
-		} else {
-		    objects = [];
-		}
 		
 		for (obj in objects) {
-		    var spr:FlxSprite = new FlxSprite(obj.x, obj.y);
+		    var spr = new FlxSprite(Reflect.field(obj, 'x'), Reflect.field(obj, 'y'));
 		
-		    if (obj.graphic != null && obj.graphic != "") {
-		        if (obj.animations != null && obj.animations.length > 0) {
-		            spr.frames = Paths.getSparrowAtlas('stages/' + obj.graphic);
-		            for (anim in obj.animations) {
-		                spr.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		    var graphic:String = Reflect.field(obj, 'graphic');
+		    if (graphic != null && graphic != '') {
+		        var anims:Array<Dynamic> = Reflect.field(obj, 'animations');
+		        if (anims != null && anims.length > 0) {
+		            spr.frames = Paths.getSparrowAtlas('stages/' + graphic);
+		            for (anim in anims) {
+		                spr.animation.addByPrefix(
+		                    Reflect.field(anim, 'name'),
+		                    Reflect.field(anim, 'prefix'),
+		                    Reflect.field(anim, 'fps'),
+		                    Reflect.field(anim, 'loop')
+		                );
 		            }
-		            if (obj.defaultAnim != null) spr.animation.play(obj.defaultAnim);
+		            var def:String = Reflect.field(obj, 'defaultAnim');
+		            if (def != null) spr.animation.play(def);
 		        } else {
-		            spr.loadGraphic(Paths.image('stages/' + obj.graphic));
+		            spr.loadGraphic(Paths.image('stages/' + graphic));
 		        }
 		    }
 		
-		    var sx = (obj.scrollX != null) ? obj.scrollX : 1.0;
-		    var sy = (obj.scrollY != null) ? obj.scrollY : 1.0;
-		    spr.scrollFactor.set(sx, sy);
+		    var sx:Float = Reflect.field(obj, 'scrollX');
+		    var sy:Float = Reflect.field(obj, 'scrollY');
+		    spr.scrollFactor.set(sx != null ? sx : 1, sy != null ? sy : 1);
 		
-		    spr.antialiasing = (obj.antialiasing != null) ? obj.antialiasing : true;
-		    spr.active = (obj.active != null) ? obj.active : false;
+		    spr.antialiasing = Reflect.field(obj, 'antialiasing') != false;
+		    spr.active = Reflect.field(obj, 'active') != false;
 		
-		    if (obj.scale != null) {
-		        spr.scale.set(obj.scale, obj.scale);
+		    var scale:Float = Reflect.field(obj, 'scale');
+		    if (scale != null) {
+		        spr.scale.set(scale, scale);
 		        spr.updateHitbox();
 		    }
 		
-		    if (obj.front == null || obj.front == false) {
-		        add(spr);
+		    var frontVal:Dynamic = Reflect.field(obj, 'front');
+		    if (frontVal == null || frontVal == false) {
+		        insert(0, spr);
 		    } else {
-		        frontList.push({spr: spr, front: Std.string(obj.front)});
+		        frontList.push({spr: spr, front: Std.string(frontVal)});
 		    }
 		}
 		
