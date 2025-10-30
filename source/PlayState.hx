@@ -447,9 +447,22 @@ class PlayState extends MusicBeatState
 		    if (graphic != "") {
 		        if (obj.animations != null && obj.animations.length > 0) {
 		            spr.frames = Paths.getSparrowAtlas('stages/' + graphic);
-		            for (anim in obj.animations) {
-		                spr.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-		            }
+			            if (obj.animations != null && Std.isOfType(obj.animations, Array)) {
+					    var animList:Array<Dynamic> = cast obj.animations;
+					    for (anim in animList) {
+					        var name:String = "";
+					        var prefix:String = "";
+					        var fps:Int = 24;
+					        var loop:Bool = false;
+					
+					        if (anim.name != null) name = anim.name;
+					        if (anim.prefix != null) prefix = anim.prefix;
+					        if (anim.fps != null) fps = anim.fps;
+					        if (anim.loop != null) loop = anim.loop;
+					
+					        spr.animation.addByPrefix(name, prefix, fps, loop);
+					    }
+					}
 		            if (obj.defaultAnim != null && obj.defaultAnim != "") {
 		                spr.animation.play(obj.defaultAnim);
 		            }
