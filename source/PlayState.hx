@@ -120,10 +120,10 @@ class PlayState extends MusicBeatState
 	private var vocals:FlxSound;
 
 	public var originalX:Float;
-
-	public static var dad:Character;
-	public static var gf:Character;
-	public static var boyfriend:Boyfriend;
+	
+	public var dad:Character = null;
+	public var gf:Character = null;
+	public var boyfriend:Boyfriend = null;
 
 	public var notes:FlxTypedGroup<Note>;
 	private var unspawnNotes:Array<Note> = [];
@@ -209,7 +209,7 @@ class PlayState extends MusicBeatState
 
 	public static var campaignScore:Int = 0;
 
-	var defaultCamZoom:Float = 1.05;
+	public var defaultCamZoom:Float = 1.05;
 
 	public static var daPixelZoom:Float = 6;
 
@@ -393,52 +393,63 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		var frontSprites:Array<Dynamic> = [];
-		var objectsArray:Array<Dynamic> = [];
+		var frontSprites:Array<{sprite:FlxSprite, front:Null<String>}> = [];
 		
-		if (Std.is(stageData.objects, Array)) {
-		    objectsArray = cast stageData.objects;
-		} else if (stageData.objects == null) {
-		    objectsArray = [];
+		var objects:Array<Dynamic> = [];
+		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
+		    objects = cast stageData.objects;
 		} else {
-		    trace("ERRO: stageData.objects não é um array válido!");
+		    trace('Stage objects inválido ou ausente para: $curStage');
 		}
 		
-		for (obj in objectsArray) {  // Agora é seguro iterar
-		    var sprite:FlxSprite = new FlxSprite(Reflect.field(obj, 'x'), Reflect.field(obj, 'y'));
+		for (obj in objects) {
+		    var x:Float = Reflect.field(obj, 'x') ?? 0;
+		    var y:Float = Reflect.field(obj, 'y') ?? 0;
+		    var sprite = new FlxSprite(x, y);
 		
-		    if (Reflect.hasField(obj, 'graphic') && Reflect.field(obj, 'graphic').length > 0) {
-		        sprite.loadGraphic(Paths.image('stages/' + Reflect.field(obj, 'graphic')));
+		    var graphicName:String = Reflect.field(obj, 'graphic');
+		    if (graphicName != null && graphicName != '') {
+		        var hasAnims:Bool = Reflect.hasField(obj, 'animations') 
+		            && Std.isOfType(Reflect.field(obj, 'animations'), Array) 
+		            && (cast Reflect.field(obj, 'animations') : Array<Dynamic>).length > 0;
+		
+		        if (hasAnims) {
+		            sprite.frames = Paths.getSparrowAtlas('stages/' + graphicName);
+		            var anims:Array<Dynamic> = cast Reflect.field(obj, 'animations');
+		            for (anim in anims) {
+		                sprite.animation.addByPrefix(
+		                    Reflect.field(anim, 'name') ?? 'anim',
+		                    Reflect.field(anim, 'prefix') ?? '',
+		                    Reflect.field(anim, 'fps') ?? 24,
+		                    Reflect.field(anim, 'loop') ?? false
+		                );
+		            }
+		            var defaultAnim:String = Reflect.field(obj, 'defaultAnim');
+		            if (defaultAnim != null) sprite.animation.play(defaultAnim);
+		        } else {
+		            sprite.loadGraphic(Paths.image('stages/' + graphicName));
+		        }
 		    }
 		
 		    sprite.scrollFactor.set(
-		        Reflect.hasField(obj, 'scrollX') ? Reflect.field(obj, 'scrollX') : 1.0,
-		        Reflect.hasField(obj, 'scrollY') ? Reflect.field(obj, 'scrollY') : 1.0
+		        Reflect.field(obj, 'scrollX') ?? 1.0,
+		        Reflect.field(obj, 'scrollY') ?? 1.0
 		    );
+		    sprite.antialiasing = Reflect.field(obj, 'antialiasing') ?? true;
+		    sprite.active = Reflect.field(obj, 'active') ?? false;
 		
-		    sprite.antialiasing = Reflect.hasField(obj, 'antialiasing') ? Reflect.field(obj, 'antialiasing') : true;
-		    sprite.active = Reflect.hasField(obj, 'active') ? Reflect.field(obj, 'active') : false;
-		
-		    if (Reflect.hasField(obj, 'scale')) {
-		        sprite.scale.set(Reflect.field(obj, 'scale'), Reflect.field(obj, 'scale'));
+		    var scale:Float = Reflect.field(obj, 'scale');
+		    if (scale != null) {
+		        sprite.scale.set(scale, scale);
 		        sprite.updateHitbox();
 		    }
 		
-		    if (Reflect.hasField(obj, 'animations') && Reflect.field(obj, 'animations').length > 0) {
-		        var tex = Paths.getSparrowAtlas('stages/' + Reflect.field(obj, 'graphic'));
-		        sprite.frames = tex;
-		        for (anim in cast(Reflect.field(obj, 'animations'), Array<Dynamic>)) {
-		            sprite.animation.addByPrefix(Reflect.field(anim, 'name'), Reflect.field(anim, 'prefix'), Reflect.field(anim, 'fps'), Reflect.field(anim, 'loop'));
-		        }
-		        if (Reflect.hasField(obj, 'defaultAnim')) {
-		            sprite.animation.play(Reflect.field(obj, 'defaultAnim'));
-		        }
-		    }
-		
-		    if (!Reflect.hasField(obj, 'front') || Reflect.field(obj, 'front') == null) {
-		        add(sprite);
+		    var frontValue:Dynamic = Reflect.field(obj, 'front');
+		    if (frontValue == null || frontValue == false) {
+		        insert(0, sprite);
 		    } else {
-		        frontSprites.push({ sprite: sprite, front: Reflect.field(obj, 'front') });
+		        var frontStr:String = Std.string(frontValue);
+		        frontSprites.push({ sprite: sprite, front: frontStr });
 		    }
 		}
 		
@@ -488,10 +499,12 @@ class PlayState extends MusicBeatState
 		}
 		
 		gf = new Character(0, 0, curGf);
+		startCharacterPos(gf);
 		gf.scrollFactor.set(0.95, 0.95);
 		gfGroup.add(gf);
 
 		dad = new Character(0, 0, SONG.player2);
+		startCharacterPos(dad, true);
 		dadGroup.add(dad);
 
 		var camPos:FlxPoint = new FlxPoint(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
@@ -511,6 +524,7 @@ class PlayState extends MusicBeatState
 
 		
 		boyfriend = new Boyfriend(0, 0, SONG.player1);
+		startCharacterPos(boyfriend);
 		boyfriendGroup.add(boyfriend);
 
 		if (!PlayStateChangeables.Optimize)
@@ -519,21 +533,19 @@ class PlayState extends MusicBeatState
 		    add(dadGroup);
 		    add(boyfriendGroup);
 		
-		    for (entry in frontSprites)
-		    {
+		    for (entry in frontSprites) {
 		        var s:FlxSprite = entry.sprite;
 		        var f:String = entry.front;
 		
-		        switch (f)
-		        {
-		            case 'gf':
-		                add(s);
-		            case 'dad':
-		                add(s);
-		            case 'bf':
-		                add(s);
+		        switch (f) {
+		            case 'gf', 'girlfriend':
+		                insert(members.indexOf(gfGroup) + 1, s); // Logo após GF
+		            case 'dad', 'opponent':
+		                insert(members.indexOf(dadGroup) + 1, s); // Logo após Dad
+		            case 'bf', 'boyfriend':
+		                insert(members.indexOf(boyfriendGroup) + 1, s); // Logo após BF
 		            default:
-		                // não tem
+		                add(s); // No topo (fallback)
 		        }
 		    }
 		}
@@ -610,9 +622,9 @@ class PlayState extends MusicBeatState
 
 		if (FlxG.save.data.songPosition) // I dont wanna talk about this code :(
 			{
-				songPosBG = new FlxSprite(0, 10).loadGraphic(Paths.image('healthBar'));
+				songPosBG = new FlxSprite(434 - 4, 28 - 4).loadGraphic(Paths.image('timeBar'));
 				if (PlayStateChangeables.useDownscroll)
-					songPosBG.y = FlxG.height * 0.9 + 45; 
+					songPosBG.y = 685 -4; 
 				songPosBG.screenCenter(X);
 				songPosBG.scrollFactor.set();
 				add(songPosBG);
@@ -620,7 +632,7 @@ class PlayState extends MusicBeatState
 				songPosBar = new FlxBar(songPosBG.x + 4, songPosBG.y + 4, LEFT_TO_RIGHT, Std.int(songPosBG.width - 8), Std.int(songPosBG.height - 8), this,
 					'songPositionBar', 0, 90000);
 				songPosBar.scrollFactor.set();
-				songPosBar.createFilledBar(FlxColor.GRAY, FlxColor.LIME);
+				songPosBar.createFilledBar(FlxColor.BLACK, FlxColor.WHITE);
 				add(songPosBar);
 	
 				var songName = new FlxText(songPosBG.x + (songPosBG.width / 2) - (SONG.song.length * 5),songPosBG.y,0,SONG.song, 16);
@@ -780,6 +792,11 @@ class PlayState extends MusicBeatState
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN,handleInput);
 
 		super.create();
+	}
+	
+	function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
+		char.x += char.positionArray[0];
+		char.y += char.positionArray[1];
 	}
 
 	function schoolIntro(?dialogueBox:DialogueBox):Void
