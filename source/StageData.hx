@@ -19,6 +19,7 @@ typedef StageFile = {
 	var dad_cam:Array<Float>;
 	
 	var objects:Array<Dynamic>;
+	var anim:Array<Dynamic>;
 }
 
 class StageData {
