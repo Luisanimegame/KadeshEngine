@@ -415,7 +415,7 @@ class PlayState extends MusicBeatState
 		
 		var frontList:Array<{spr:FlxSprite, front:String}> = [];
 
-		// === LOOP SEGURO: SÓ CHECA SE É ARRAY ===
+		// === LOOP DO STAGE (graphic = pasta, image = arquivo) ===
 		var objects:Array<Dynamic> = [];
 		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
 		    objects = cast stageData.objects;
@@ -424,7 +424,8 @@ class PlayState extends MusicBeatState
 		for (obj in objects) {
 		    var x:Float = 0;
 		    var y:Float = 0;
-		    var graphic:String = "";
+		    var folder:String = "";
+		    var image:String = "";
 		    var scale:Float = 1;
 		    var scrollX:Float = 1;
 		    var scrollY:Float = 1;
@@ -434,7 +435,8 @@ class PlayState extends MusicBeatState
 		
 		    if (obj.x != null) x = obj.x;
 		    if (obj.y != null) y = obj.y;
-		    if (obj.graphic != null) graphic = obj.graphic;
+		    if (obj.graphic != null) folder = obj.graphic;
+		    if (obj.image != null) image = obj.image;
 		    if (obj.scale != null) scale = obj.scale;
 		    if (obj.scrollX != null) scrollX = obj.scrollX;
 		    if (obj.scrollY != null) scrollY = obj.scrollY;
@@ -444,30 +446,30 @@ class PlayState extends MusicBeatState
 		
 		    var spr = new FlxSprite(x, y);
 		
-		    if (graphic != "") {
-		        if (obj.animations != null && obj.animations.length > 0) {
-		            spr.frames = Paths.getSparrowAtlas('stages/' + graphic);
-			            if (obj.animations != null && Std.isOfType(obj.animations, Array)) {
-					    var animList:Array<Dynamic> = cast obj.animations;
-					    for (anim in animList) {
-					        var name:String = "";
-					        var prefix:String = "";
-					        var fps:Int = 24;
-					        var loop:Bool = false;
-					
-					        if (anim.name != null) name = anim.name;
-					        if (anim.prefix != null) prefix = anim.prefix;
-					        if (anim.fps != null) fps = anim.fps;
-					        if (anim.loop != null) loop = anim.loop;
-					
-					        spr.animation.addByPrefix(name, prefix, fps, loop);
-					    }
-					}
+		    if (folder != "" && image != "") {
+		        var path:String = 'stages/' + folder + '/' + image;
+		
+		        if (obj.animations != null && Std.isOfType(obj.animations, Array)) {
+		            spr.frames = Paths.getSparrowAtlas(path);
+		            var animList:Array<Dynamic> = cast obj.animations;
+		            for (anim in animList) {
+		                var name:String = "";
+		                var prefix:String = "";
+		                var fps:Int = 24;
+		                var loop:Bool = false;
+		
+		                if (anim.name != null) name = anim.name;
+		                if (anim.prefix != null) prefix = anim.prefix;
+		                if (anim.fps != null) fps = anim.fps;
+		                if (anim.loop != null) loop = anim.loop;
+		
+		                spr.animation.addByPrefix(name, prefix, fps, loop);
+		            }
 		            if (obj.defaultAnim != null && obj.defaultAnim != "") {
 		                spr.animation.play(obj.defaultAnim);
 		            }
 		        } else {
-		            spr.loadGraphic(Paths.image('stages/' + graphic));
+		            spr.loadGraphic(Paths.image(path));
 		        }
 		    }
 		
