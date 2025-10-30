@@ -1,0 +1,91 @@
+{
+	"animations": [
+		{
+			"offsets": [
+				0,
+				0
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "idle",
+			"loop": false,
+			"name": "Brub_Idle"
+		},
+		{
+			"offsets": [
+				65,
+				0
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "singLEFT",
+			"loop": false,
+			"name": "Brub_Left"
+		},
+		{
+			"offsets": [
+				12,
+				-10
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "singDOWN",
+			"loop": false,
+			"name": "Brub_Down"
+		},
+		{
+			"offsets": [
+				-1,
+				45
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "singUP",
+			"loop": false,
+			"name": "Brub_Up"
+		},
+		{
+			"offsets": [
+				-62,
+				0
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "singRIGHT",
+			"loop": false,
+			"name": "Brub_Right"
+		},
+		{
+			"offsets": [
+				7,
+				28
+			],
+			"indices": [],
+			"fps": 24,
+			"anim": "confused",
+			"loop": false,
+			"name": "Brub_Confuse"
+		}
+	],
+	"vocals_file": "",
+	"no_antialiasing": false,
+	"image": "characters/Brubs",
+	"position": [
+		-110,
+		100
+	],
+	"healthicon": "face",
+	"flip_x": false,
+	"healthbar_colors": [
+		161,
+		161,
+		161
+	],
+	"camera_position": [
+		0,
+		0
+	],
+	"sing_duration": 4,
+	"scale": 1,
+	"_editor_isPlayer": false
+}
