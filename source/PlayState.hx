@@ -405,30 +405,41 @@ class PlayState extends MusicBeatState
 		var frontList:Array<{spr:FlxSprite, front:String}> = [];
 
 		var objects:Array<Dynamic> = [];
-		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
+		if (stageData.objects != null && Std.is(stageData.objects, Array)) {
 		    objects = cast stageData.objects;
 		} else {
-		    trace('No objects for ' + curStage);
+		    objects = [];
 		}
 		
 		for (obj in objects) {
-		    var spr = new FlxSprite(obj.x, obj.y);
+		    var spr:FlxSprite = new FlxSprite(obj.x, obj.y);
+		
 		    if (obj.graphic != null && obj.graphic != "") {
 		        if (obj.animations != null && obj.animations.length > 0) {
 		            spr.frames = Paths.getSparrowAtlas('stages/' + obj.graphic);
-		            for (anim in obj.animations) spr.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		            for (anim in obj.animations) {
+		                spr.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+		            }
 		            if (obj.defaultAnim != null) spr.animation.play(obj.defaultAnim);
 		        } else {
 		            spr.loadGraphic(Paths.image('stages/' + obj.graphic));
 		        }
 		    }
-		    spr.scrollFactor.set(obj.scrollX != null ? obj.scrollX : 1, obj.scrollY != null ? obj.scrollY : 1);
-		    spr.antialiasing = obj.antialiasing != false;
-		    spr.active = obj.active != false;
-		    if (obj.scale != null) { spr.scale.set(obj.scale, obj.scale); spr.updateHitbox(); }
+		
+		    var sx = (obj.scrollX != null) ? obj.scrollX : 1.0;
+		    var sy = (obj.scrollY != null) ? obj.scrollY : 1.0;
+		    spr.scrollFactor.set(sx, sy);
+		
+		    spr.antialiasing = (obj.antialiasing != null) ? obj.antialiasing : true;
+		    spr.active = (obj.active != null) ? obj.active : false;
+		
+		    if (obj.scale != null) {
+		        spr.scale.set(obj.scale, obj.scale);
+		        spr.updateHitbox();
+		    }
 		
 		    if (obj.front == null || obj.front == false) {
-		        insert(0, spr);
+		        add(spr);
 		    } else {
 		        frontList.push({spr: spr, front: Std.string(obj.front)});
 		    }
@@ -515,13 +526,13 @@ class PlayState extends MusicBeatState
 		    add(boyfriendGroup);
 		
 		    for (f in frontList) {
-		        switch (f.front.toLowerCase()) {
-		            case 'gf', 'girlfriend': insert(members.indexOf(gfGroup)+1, f.spr);
-		            case 'dad', 'opponent': insert(members.indexOf(dadGroup)+1, f.spr);
-		            case 'bf', 'boyfriend': insert(members.indexOf(boyfriendGroup)+1, f.spr);
-		            default: add(f.spr);
-		        }
-		    }
+			    switch (f.front.toLowerCase()) {
+			        case 'gf', 'girlfriend': add(f.spr); // ou inserir após gfGroup conforme sua necessidade
+			        case 'dad', 'opponent': add(f.spr);
+			        case 'bf', 'boyfriend': add(f.spr);
+			        default: add(f.spr);
+			    }
+			}
 		}
 
 
