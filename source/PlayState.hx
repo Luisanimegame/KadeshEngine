@@ -402,6 +402,15 @@ class PlayState extends MusicBeatState
 		    trace('No objects for ' + curStage);
 		}
 		
+		var frontList:Array<{spr:FlxSprite, front:String}> = [];
+
+		var objects:Array<Dynamic> = [];
+		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
+		    objects = cast stageData.objects;
+		} else {
+		    trace('No objects for ' + curStage);
+		}
+		
 		for (obj in objects) {
 		    var spr = new FlxSprite(obj.x, obj.y);
 		    if (obj.graphic != null && obj.graphic != "") {
