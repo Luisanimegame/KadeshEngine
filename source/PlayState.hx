@@ -2339,7 +2339,6 @@ class PlayState extends MusicBeatState
 									altAnim = '-alt';
 								}
 							}
-						}
 						
 						var char:Character = dad;
 						var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))] + altAnim;
@@ -2710,7 +2709,7 @@ class PlayState extends MusicBeatState
 
 				if(val2 <= 0)
 				{
-					songSpeed = newValue;
+					PlayStateChangeables.scrollSpeed = newValue;
 				}
 				else
 				{
