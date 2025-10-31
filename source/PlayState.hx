@@ -3280,6 +3280,7 @@ class PlayState extends MusicBeatState
 							boyfriend.dance();
 							//boyfriend.animation.curAnim.finish();
 						}
+						} 
 
 						for (note in dumbNotes)
 						{
