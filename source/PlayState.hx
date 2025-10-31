@@ -1693,8 +1693,6 @@ class PlayState extends MusicBeatState
 			if (songSpeedTween != null)
 				songSpeedTween.active = true;
 
-			if(carTimer != null) carTimer.active = true;
-
 			var chars:Array<Character> = [boyfriend, gf, dad];
 			for (char in chars) {
 				if(char != null && char.colorTween != null) {
@@ -2328,7 +2326,7 @@ class PlayState extends MusicBeatState
 							
 							var altAnim:String = daNote.animSuffix;
 
-							if(daNote.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+							if(noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
 							dad.playAnim('hey', true);
 							dad.specialAnim = true;
 							dad.heyTimer = 0.6;
@@ -2341,8 +2339,8 @@ class PlayState extends MusicBeatState
 							}
 						
 						var char:Character = dad;
-						var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))] + altAnim;
-						if(note.gfNote) {
+						var animToPlay:String = singAnimations[Std.int(Math.abs(daNote.noteData))] + altAnim;
+						if(daNote.gfNote) {
 							char = gf;
 						}
 			
