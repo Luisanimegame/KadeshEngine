@@ -2148,7 +2148,7 @@ class PlayState extends MusicBeatState
 							
 							var altAnim:String = daNote.animSuffix;
 
-							if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+							if(daNote.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
 							dad.playAnim('hey', true);
 							dad.specialAnim = true;
 							dad.heyTimer = 0.6;
