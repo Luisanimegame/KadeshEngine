@@ -64,6 +64,7 @@ import openfl.filters.ShaderFilter;
 import hxcodec.VideoHandler;
 import StageData;
 import Note.EventNote;
+import openfl.utils.Assets as OpenFlAssets;
 
 #if windows
 import Discord.DiscordClient;
@@ -697,7 +698,6 @@ class PlayState extends MusicBeatState
 		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
-		healthBar.createFilledBar(FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]), FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]));
 		// healthBar
 		add(healthBar);
 
@@ -747,6 +747,7 @@ class PlayState extends MusicBeatState
 		iconP2 = new HealthIcon(SONG.player2, false);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 		add(iconP2);
+		reloadHealthBarColors();
 
 		strumLineNotes.cameras = [camHUD];
 		notes.cameras = [camHUD];
@@ -842,6 +843,13 @@ class PlayState extends MusicBeatState
 		char.y += char.positionArray[1];
 	}
 	
+	public function reloadHealthBarColors() {
+		healthBar.createFilledBar(FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]),
+			FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]));
+
+		healthBar.updateBar();
+	}
+	
 	public function addCharacterToList(newCharacter:String, type:Int) {
 		switch(type) {
 			case 0:
@@ -872,6 +880,18 @@ class PlayState extends MusicBeatState
 					newGf.alpha = 0.00001;
 				}
 		}
+	}
+	
+	function set_songSpeed(value:Float):Float
+	{
+		if(generatedMusic)
+		{
+			var ratio:Float = value / songSpeed; //funny word huh
+			for (note in notes) note.resizeByRatio(ratio);
+			for (note in unspawnNotes) note.resizeByRatio(ratio);
+		}
+		songSpeed = value;
+		return value;
 	}
 
 	function schoolIntro(?dialogueBox:DialogueBox):Void
@@ -1316,12 +1336,12 @@ class PlayState extends MusicBeatState
 				{
 					var newEventNote:Array<Dynamic> = [event[0], event[1][i][0], event[1][i][1], event[1][i][2]];
 					var subEvent:EventNote = {
-						strumTime: newEventNote[0] + ClientPrefs.noteOffset,
+						strumTime: newEventNote[0],
 						event: newEventNote[1],
 						value1: newEventNote[2],
 						value2: newEventNote[3]
 					};
-					subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
+					// subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
 					eventNotes.push(subEvent);
 					eventPushed(subEvent);
 				}
@@ -1400,12 +1420,12 @@ class PlayState extends MusicBeatState
 			{
 				var newEventNote:Array<Dynamic> = [event[0], event[1][i][0], event[1][i][1], event[1][i][2]];
 				var subEvent:EventNote = {
-					strumTime: newEventNote[0] + ClientPrefs.noteOffset,
+					strumTime: newEventNote[0],
 					event: newEventNote[1],
 					value1: newEventNote[2],
 					value2: newEventNote[3]
 				};
-				subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
+				// subEvent.strumTime -= eventNoteEarlyTrigger(subEvent);
 				eventNotes.push(subEvent);
 				eventPushed(subEvent);
 			}
@@ -1444,14 +1464,6 @@ class PlayState extends MusicBeatState
 		if(!eventPushedMap.exists(event.event)) {
 			eventPushedMap.set(event.event, true);
 		}
-	}
-
-	function eventNoteEarlyTrigger(event:EventNote):Float {
-		var returnedValue:Float = callOnLuas('eventEarlyTrigger', [event.event]);
-		if(returnedValue != 0) {
-			return returnedValue;
-		}
-		return 0;
 	}
 
 	function sortByShit(Obj1:Note, Obj2:Note):Int

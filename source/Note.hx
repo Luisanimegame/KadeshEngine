@@ -36,6 +36,9 @@ class Note extends FlxSprite
 	
 	public var noteType(default, set):String = null;
 	
+	public var multAlpha:Float = 1;
+	public var multSpeed(default, set):Float = 1;
+	
 	public var eventName:String = '';
 	public var eventLength:Int = 0;
 	public var eventVal1:String = '';
@@ -68,6 +71,21 @@ class Note extends FlxSprite
 	
 
 	public var rating:String = "shit";
+	
+	private function set_multSpeed(value:Float):Float {
+		resizeByRatio(value / multSpeed);
+		multSpeed = value;
+		return value;
+	}
+
+	public function resizeByRatio(ratio:Float) //haha funny twitter shit
+	{
+		if(isSustainNote && !animation.curAnim.name.endsWith('end'))
+		{
+			scale.y *= ratio;
+			updateHitbox();
+		}
+	}
 	
 	private function set_texture(value:String):String {
 		if(texture != value) {
