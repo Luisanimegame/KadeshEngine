@@ -393,12 +393,7 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		// === APLICA O ZOOM DO STAGE ===
-		if (stageData.defaultZoom != null && stageData.defaultZoom > 0) {
-		    defaultCamZoom = stageData.defaultZoom;
-		    FlxG.camera.zoom = defaultCamZoom;
-		    camHUD.zoom = defaultCamZoom;
-		}
+		defaultCamZoom = stageData.defaultZoom;
 		
 		BF_X = stageData.bf[0];
 		BF_Y = stageData.bf[1];
