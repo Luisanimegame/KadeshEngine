@@ -106,6 +106,7 @@ class PlayState extends MusicBeatState
 
 	var songLength:Float = 0;
 	public var songSpeed:Float = 1.0;
+	public var songSpeedType:String = "multiplicative";
 	public var songSpeedTween:FlxTween = null;
 	
 	var kashWatermark:FlxText;
@@ -1664,16 +1665,6 @@ class PlayState extends MusicBeatState
 				vocals.pause();
 			}
 			
-			if (songSpeedTween != null)
-				songSpeedTween.active = false;
-			
-			var chars:Array<Character> = [boyfriend, gf, dad];
-			for (char in chars) {
-				if(char != null && char.colorTween != null) {
-					char.colorTween.active = false;
-				}
-			}
-
 			#if windows
 			DiscordClient.changePresence("PAUSED on " + SONG.song + " (" + storyDifficultyText + ") " + Ratings.GenerateLetterRank(accuracy), "Acc: " + HelperFunctions.truncateFloat(accuracy, 2) + "% | Score: " + songScore + " | Misses: " + misses  , iconRPC);
 			#end
@@ -1693,16 +1684,6 @@ class PlayState extends MusicBeatState
 				resyncVocals();
 			}
 			
-			if (songSpeedTween != null)
-				songSpeedTween.active = true;
-
-			var chars:Array<Character> = [boyfriend, gf, dad];
-			for (char in chars) {
-				if(char != null && char.colorTween != null) {
-					char.colorTween.active = true;
-				}
-			}
-
 			if (!startTimer.finished)
 				startTimer.active = true;
 			paused = false;
@@ -3241,88 +3222,74 @@ class PlayState extends MusicBeatState
 				}
 		 
 					// PRESSES, check for note hits
-					if (pressArray.contains(true) && generatedMusic)
-					{
-						boyfriend.holdTimer = 0;
+					if (pressArray.contains(true) && generatedMusic) {
+					    var possibleNotes:Array<Note> = [];
+					    var directionList:Array<Int> = [];
+					    var dumbNotes:Array<Note> = [];
+					    var directionsAccounted:Array<Bool> = [false,false,false,false];
 					
-						var possibleNotes:Array<Note> = []; // notes that can be hit
-						var directionList:Array<Int> = []; // directions that can be hit
-						var dumbNotes:Array<Note> = []; // notes to kill later
-						var directionsAccounted:Array<Bool> = [false,false,false,false]; // we don't want to do judgments for more than one presses
-						
-						notes.forEachAlive(function(daNote:Note)
-							{
-								if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !directionsAccounted[daNote.noteData])
-								{
-									if (directionList.contains(daNote.noteData))
-										{
-											directionsAccounted[daNote.noteData] = true;
-											for (coolNote in possibleNotes)
-											{
-												if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
-												{ // if it's the same note twice at < 10ms distance, just delete it
-													// EXCEPT u cant delete it in this loop cuz it fucks with the collection lol
-													dumbNotes.push(daNote);
-													break;
-												}
-												else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
-												{ // if daNote is earlier than existing note (coolNote), replace
-													possibleNotes.remove(coolNote);
-													possibleNotes.push(daNote);
-													break;
-												}
-											}
-										}
-										else
-										{
-											possibleNotes.push(daNote);
-											directionList.push(daNote.noteData);
-										}
-								}
-						});
-
-						for (note in dumbNotes)
+					    notes.forEachAlive(function(daNote:Note) {
+					        if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !directionsAccounted[daNote.noteData]) {
+					            if (directionList.contains(daNote.noteData)) {
+					                directionsAccounted[daNote.noteData] = true;
+					                for (coolNote in possibleNotes) {
+					                    if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10) {
+					                        dumbNotes.push(daNote);
+					                        break;
+					                    } else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime) {
+					                        possibleNotes.remove(coolNote);
+					                        possibleNotes.push(daNote);
+					                        break;
+					                    }
+					                }
+					            } else {
+					                possibleNotes.push(daNote);
+					                directionList.push(daNote.noteData);
+					            }
+					        }
+					    });
+					
+					    for (note in dumbNotes) {
+					        FlxG.log.add("killing dumb ass note at " + note.strumTime);
+					        note.kill();
+					        notes.remove(note, true);
+					        note.destroy();
+					    }
+					
+					    possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+					
+					    if (perfectMode) {
+					        goodNoteHit(possibleNotes[0]);
+					    } else if (possibleNotes.length > 0) {
+					        if (!FlxG.save.data.ghost) {
+					            for (shit in 0...pressArray.length) {
+					                if (pressArray[shit] && !directionList.contains(shit))
+					                    noteMiss(shit, null);
+					            }
+					        }
+					        for (coolNote in possibleNotes) {
+					            if (pressArray[coolNote.noteData]) {
+					                if (mashViolations != 0) mashViolations--;
+					                scoreTxt.color = FlxColor.WHITE;
+					                var noteDiff:Float = -(coolNote.strumTime - Conductor.songPosition);
+					                anas[coolNote.noteData].hit = true;
+					                anas[coolNote.noteData].hitJudge = Ratings.CalculateRating(noteDiff, Math.floor((PlayStateChangeables.safeFrames / 60) * 1000));
+					                anas[coolNote.noteData].nearestNote = [coolNote.strumTime, coolNote.noteData, coolNote.sustainLength];
+					                goodNoteHit(coolNote);
+					            }
+					        }
+					    } else if (!FlxG.save.data.ghost) {
+					        for (shit in 0...pressArray.length)
+					            if (pressArray[shit])
+					                noteMiss(shit, null);
+					    }
+					
+					} else {
+					    if (boyfriend.animation.curAnim != null && boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 / FlxG.sound.music.pitch) * boyfriend.singDuration && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss'))
 						{
-							FlxG.log.add("killing dumb ass note at " + note.strumTime);
-							note.kill();
-							notes.remove(note, true);
-							note.destroy();
+							boyfriend.dance();
+							//boyfriend.animation.curAnim.finish();
 						}
-			
-						possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
-						if (perfectMode)
-							goodNoteHit(possibleNotes[0]);
-						else if (possibleNotes.length > 0)
-						{
-							if (!FlxG.save.data.ghost)
-							{
-								for (shit in 0...pressArray.length)
-									{ // if a direction is hit that shouldn't be
-										if (pressArray[shit] && !directionList.contains(shit))
-											noteMiss(shit, null);
-									}
-							}
-							for (coolNote in possibleNotes)
-							{
-								if (pressArray[coolNote.noteData])
-								{
-									if (mashViolations != 0)
-										mashViolations--;
-									scoreTxt.color = FlxColor.WHITE;
-									var noteDiff:Float = -(coolNote.strumTime - Conductor.songPosition);
-									anas[coolNote.noteData].hit = true;
-									anas[coolNote.noteData].hitJudge = Ratings.CalculateRating(noteDiff, Math.floor((PlayStateChangeables.safeFrames / 60) * 1000));
-									anas[coolNote.noteData].nearestNote = [coolNote.strumTime,coolNote.noteData,coolNote.sustainLength];
-									goodNoteHit(coolNote);
-								}
-							}
-						}
-						else if (!FlxG.save.data.ghost)
-							{
-								for (shit in 0...pressArray.length)
-									if (pressArray[shit])
-										noteMiss(shit, null);
-							}
 					}
 
 					if (!loadRep)
