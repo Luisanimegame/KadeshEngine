@@ -1,68 +1,10 @@
 {
-  "defaultZoom": 0.7,
+  "directory": "",
+  "zoom": 0.7,
   "bf": [900, 30],
   "girl": [400, 80],
   "dad": [50, 30],
+  
   "bf_cam": [0, 0],
   "dad_cam": [0, 0],
-
-  "objects": [
-   {
-      "graphic": "one",
-      "image": "back",
-      "x": 800,
-      "y": -300,
-      "scrollX": 0.9,
-      "scrollY": 0.9,
-      "scale": 1.5,
-      "antialiasing": true,
-      "active": true,
-      "front": false
-    },
-    {
-      "graphic": "one",
-      "image": "crowd",
-      "x": 800,
-      "y": 125,
-      "scale": 1.1,
-      "antialiasing": true,
-      "front": false,
-      "animations": [
-        { "name": "bugboo", "prefix": "frontbop", "fps": 24, "loop": true },
-      ],
-      "defaultAnim": "bugboo"
-    },
-    {
-      "graphic": "one",
-      "image": "bg",
-      "x": -675,
-      "y": -500,
-      "scale": 1.2,
-      "antialiasing": true,
-      "active": true,
-      "front": false
-    },
-    {
-      "graphic": "one",
-      "image": "server",
-      "x": -125,
-      "y": -150,
-      "scale": 1.2,
-      "antialiasing": true,
-      "active": true,
-      "front": false
-    },
-    {
-      "graphic": "one",
-      "image": "lights",
-      "x": -800,
-      "y": -300,
-      "scrollX": 1.2,
-      "scrollY": 1.1,
-      "scale": 1.1,
-      "antialiasing": true,
-      "active": true,
-      "front": false
-    },
-  ]
 }
