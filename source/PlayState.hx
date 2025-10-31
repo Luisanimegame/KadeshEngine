@@ -105,9 +105,9 @@ class PlayState extends MusicBeatState
 	var halloweenLevel:Bool = false;
 
 	var songLength:Float = 0;
-	public var songSpeed:Float = 1.0;
+	public var songSpeedTween:FlxTween;
+	public var songSpeed(default, set):Float = 1;
 	public var songSpeedType:String = "multiplicative";
-	public var songSpeedTween:FlxTween = null;
 	
 	var kashWatermark:FlxText;
 	
@@ -296,7 +296,7 @@ class PlayState extends MusicBeatState
 
 		PlayStateChangeables.useDownscroll = FlxG.save.data.downscroll;
 		PlayStateChangeables.safeFrames = FlxG.save.data.frames;
-		songSpeed = FlxG.save.data.scrollSpeed;
+		PlayStateChangeables.scrollSpeed = FlxG.save.data.scrollSpeed;
 		PlayStateChangeables.botPlay = FlxG.save.data.botplay;
 		PlayStateChangeables.Optimize = FlxG.save.data.optimize;
 
@@ -373,8 +373,6 @@ class PlayState extends MusicBeatState
 		Conductor.changeBPM(SONG.bpm);
 		
 		Conductor.changeBPM(SONG.bpm);
-
-		songSpeed = SONG.speed != null ? SONG.speed : 1.0;
 
 		trace('INFORMATION ABOUT WHAT U PLAYIN WIT:\nFRAMES: ' + PlayStateChangeables.safeFrames + '\nZONE: ' + Conductor.safeZoneOffset + '\nTS: ' + Conductor.timeScale + '\nBotPlay : ' + PlayStateChangeables.botPlay);
 	
@@ -1287,6 +1285,8 @@ class PlayState extends MusicBeatState
 
 		var songData = SONG;
 		Conductor.changeBPM(songData.bpm);
+		
+		songSpeed = SONG.speed * 1;
 
 		curSong = songData.song;
 
