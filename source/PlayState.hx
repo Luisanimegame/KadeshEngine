@@ -180,6 +180,8 @@ class PlayState extends MusicBeatState
 	var currentFrames:Int = 0;
 
 	public var dialogue:Array<String> = ['dad:blah blah blah', 'bf:coolswag'];
+	
+	var stagelight:FlxSprite;
 
 	var halloweenBG:FlxSprite;
 	var isHalloween:Bool = false;
@@ -381,19 +383,17 @@ class PlayState extends MusicBeatState
 		if (stageData == null) {
 		    stageData = {
 		        directory: "",
-		        defaultZoom: 0.9,
+		        zoom: 0.7,
 		        bf: [770, 100],
 		        girl: [400, 130],
 		        dad: [100, 100],
 		
 		        bf_cam: [0, 0],
-		        dad_cam: [0, 0],
-		
-		        objects: []
+		        dad_cam: [0, 0]
 		    };
 		}
 		
-		defaultCamZoom = stageData.defaultZoom;
+		defaultCamZoom = stageData.zoom;
 		
 		BF_X = stageData.bf[0];
 		BF_Y = stageData.bf[1];
@@ -403,7 +403,7 @@ class PlayState extends MusicBeatState
 		DAD_Y = stageData.dad[1];
 	
 		boyfriendCameraOffset = stageData.bf_cam;
-		if(boyfriendCameraOffset == null) //Fucks sake should have done it since the start :rolling_eyes:
+		if(boyfriendCameraOffset == null)
 			boyfriendCameraOffset = [0, 0];
 
 		opponentCameraOffset = stageData.dad_cam;
@@ -414,73 +414,98 @@ class PlayState extends MusicBeatState
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
 		
-		var bgLayer:FlxSpriteGroup = new FlxSpriteGroup();
-		var midLayer:FlxSpriteGroup = new FlxSpriteGroup();
-		var frontLayer:FlxSpriteGroup = new FlxSpriteGroup();
+		var stageCheck:String = 'stage';
 		
-		var objects:Array<Dynamic> = [];
-		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
-		    objects = cast stageData.objects;
-		}
+		if (SONG.stage == null) {
+			switch(storyWeek)
+			{
+				case 2: stageCheck = 'halloween';
+			}
+		} else {stageCheck = SONG.stage;}
 		
-		for (obj in objects) {
-		    var x:Float = 0; if (obj.x != null) x = obj.x;
-		    var y:Float = 0; if (obj.y != null) y = obj.y;
-		    var folder:String = ""; if (obj.graphic != null) folder = obj.graphic;
-		    var image:String = ""; if (obj.image != null) image = obj.image;
-		    var scale:Float = 1; if (obj.scale != null) scale = obj.scale;
-		    var scrollX:Float = 1; if (obj.scrollX != null) scrollX = obj.scrollX;
-		    var scrollY:Float = 1; if (obj.scrollY != null) scrollY = obj.scrollY;
-		    var antialiasing:Bool = true; if (obj.antialiasing != null) antialiasing = obj.antialiasing;
-		    var active:Bool = false; if (obj.active != null) active = obj.active;
-		    var front:Dynamic = false; if (obj.front != null) front = obj.front;
+		if (!PlayStateChangeables.Optimize)
+		{
 		
-		    var spr = new FlxSprite(x, y);
-		
-		    if (folder != "" && image != "") {
-		        var path:String = 'stages/' + folder + '/' + image;
-		
-		        if (obj.animations != null && Std.isOfType(obj.animations, Array)) {
-		            spr.frames = Paths.getSparrowAtlas(path);
-		            var animList:Array<Dynamic> = cast obj.animations;
-		            for (anim in animList) {
-		                var name:String = ""; if (anim.name != null) name = anim.name;
-		                var prefix:String = ""; if (anim.prefix != null) prefix = anim.prefix;
-		                var fps:Int = 24; if (anim.fps != null) fps = anim.fps;
-		                var loop:Bool = false; if (anim.loop != null) loop = anim.loop;
-		                spr.animation.addByPrefix(name, prefix, fps, loop);
-		            }
-		            if (obj.defaultAnim != null && obj.defaultAnim != "") {
-		                spr.animation.play(obj.defaultAnim);
-		            }
-		        } else {
-		            spr.loadGraphic(Paths.image(path));
-		        }
-		    }
-		
-		    spr.scrollFactor.set(scrollX, scrollY);
-		    spr.antialiasing = antialiasing;
-		    spr.active = active;
-		    spr.scale.set(scale, scale);
-		    spr.updateHitbox();
-		
-		    if (front == false) {
-		        bgLayer.add(spr);  // Fundo
-		    } else {
-		        var who:String = Std.string(front).toLowerCase();
-		        switch (who) {
-		            case 'gf', 'girlfriend':
-		                midLayer.add(spr);  // Entre GF e DAD/BF
-		            case 'dad', 'opponent':
-		                midLayer.add(spr);  // Entre DAD e BF
-		            case 'bf', 'boyfriend':
-		                frontLayer.add(spr);  // Na frente do BF
-		            default:
-		                frontLayer.add(spr);  // Qualquer outro = frente
-		        }
-		    }
-		}
+		switch(stageCheck)
+		{
+			case 'stage':
+			{
+				    curStage = 'stage';
+					var stageback:FlxSprite = new FlxSprite(800, -300);
+				    stageback.loadGraphic(Paths.image('stages/one/back'));
+				    stageback.setGraphicSize(Std.int(stageback.width * 1.5));
+				    stageback.updateHitbox();
+				    stageback.antialiasing = true;
+				    stageback.scrollFactor.set(0.9, 0.9);
+				    stageback.active = false;
+				    add(stageback);
+				
+				    var audience_front:FlxSprite = new FlxSprite(800, 125);
+				    audience_front.frames = Paths.getSparrowAtlas('stages/one/crowd');
+				    audience_front.animation.addByPrefix('audience_front', 'frontbop', 24);
+				    audience_front.animation.play('audience_front');
+				    audience_front.scrollFactor.set(0.9, 0.9);
+				    audience_front.setGraphicSize(Std.int(audience_front.width * 1.1));
+				    audience_front.updateHitbox();
+				    audience_front.antialiasing = true;
+				    if(FlxG.save.data.distractions){
+				        add(audience_front);
+				    }
+				
+				    var stagefront:FlxSprite = new FlxSprite(-675, -500);
+				    stagefront.loadGraphic(Paths.image('stages/one/bg'));
+				    stagefront.setGraphicSize(Std.int(stagefront.width * 1.2));
+				    stagefront.updateHitbox();
+				    stagefront.antialiasing = true;
+				    stagefront.scrollFactor.set(0.9, 0.9);
+				    stagefront.active = false;
+				    add(stagefront);
+				
+				    var stageserver:FlxSprite = new FlxSprite(-125, 150);
+				    stageserver.loadGraphic(Paths.image('stages/one/server'));
+				    stageserver.setGraphicSize(Std.int(stageserver.width * 1));
+				    stageserver.updateHitbox();
+				    stageserver.antialiasing = true;
+				    stageserver.scrollFactor.set(1, 1); // Camada frontal
+				    stageserver.active = false;
+				    add(stageserver);
+				
+				    var stagelight:FlxSprite = new FlxSprite(-800, -300);
+				    stagelight.loadGraphic(Paths.image('stages/one/lights'));
+				    stagelight.scrollFactor.set(1.2, 1.1);
+				    stagelight.setGraphicSize(Std.int(stagelight.width * 1.1));
+				    stagelight.updateHitbox();
+				    stagelight.antialiasing = true;
+			}
+			default:
+			{
+					curStage = 'stage';
+					var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
+					bg.antialiasing = true;
+					bg.scrollFactor.set(0.9, 0.9);
+					bg.active = false;
+					add(bg);
 
+					var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image('stagefront'));
+					stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
+					stageFront.updateHitbox();
+					stageFront.antialiasing = true;
+					stageFront.scrollFactor.set(0.9, 0.9);
+					stageFront.active = false;
+					add(stageFront);
+
+					var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains'));
+					stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
+					stageCurtains.updateHitbox();
+					stageCurtains.antialiasing = true;
+					stageCurtains.scrollFactor.set(1.3, 1.3);
+					stageCurtains.active = false;
+
+					add(stageCurtains);
+			}
+		}
+		}
+		
 		//defaults if no gf was found in chart
 		var gfCheck:String = 'gf';
 		
@@ -492,6 +517,7 @@ class PlayState extends MusicBeatState
 				case 6: gfCheck = 'gf-pixel';
 			}
 		} else {gfCheck = SONG.gfVersion;}
+		
 
 		var curGf:String = '';
 		switch (gfCheck)
@@ -537,12 +563,12 @@ class PlayState extends MusicBeatState
 
 		if (!PlayStateChangeables.Optimize)
 		{
-		    add(bgLayer);
 			add(gfGroup);
 			add(dadGroup);
 			add(boyfriendGroup);
-			add(midLayer);
-			add(frontLayer);
+			
+			//salve
+			add(stagelight);
 		}
 
 
@@ -2121,10 +2147,18 @@ class PlayState extends MusicBeatState
 
 						var altAnim:String = "";
 	
-						if (SONG.notes[Math.floor(curStep / 16)] != null)
+						if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+						dad.playAnim('hey', true);
+						dad.specialAnim = true;
+						dad.heyTimer = 0.6;
+					} else if(!note.noAnimation) {
+						var altAnim:String = note.animSuffix;
+			
+						if (SONG.notes[curSection] != null)
 						{
-							if (SONG.notes[Math.floor(curStep / 16)].altAnim)
+							if (SONG.notes[curSection].altAnim) {
 								altAnim = '-alt';
+							}
 						}
 	
 						switch (Math.abs(daNote.noteData))
@@ -3162,18 +3196,31 @@ class PlayState extends MusicBeatState
 					else
 						totalNotesHit += 1;
 	
-
-					switch (note.noteData)
+					if(!note.noAnimation) {
+					var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
+	
+					if(note.gfNote)
 					{
-						case 2:
-							boyfriend.playAnim('singUP', true);
-						case 3:
-							boyfriend.playAnim('singRIGHT', true);
-						case 1:
-							boyfriend.playAnim('singDOWN', true);
-						case 0:
-							boyfriend.playAnim('singLEFT', true);
+						if(gf != null)
+						{
+							gf.playAnim(animToPlay + note.animSuffix, true);
+							gf.holdTimer = 0;
+						}
 					}
+					else
+					{
+						boyfriend.playAnim(animToPlay + note.animSuffix, true);
+						boyfriend.holdTimer = 0;
+					}
+	
+					if(note.noteType == 'Hey!') {
+						if(boyfriend.animOffsets.exists('hey')) {
+							boyfriend.playAnim('hey', true);
+							boyfriend.specialAnim = true;
+							boyfriend.heyTimer = 0.6;
+						}
+					}
+			
 		
 					#if windows
 					if (luaModchart != null)

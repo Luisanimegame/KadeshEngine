@@ -13,6 +13,13 @@ import PlayState;
 
 using StringTools;
 
+typedef EventNote = {
+	strumTime:Float,
+	event:String,
+	value1:String,
+	value2:String
+}
+
 class Note extends FlxSprite
 {
 	public var strumTime:Float = 0;
@@ -26,6 +33,25 @@ class Note extends FlxSprite
 	public var modifiedByLua:Bool = false;
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
+	
+	public var noteType(default, set):String = null;
+	
+	public var eventName:String = '';
+	public var eventLength:Int = 0;
+	public var eventVal1:String = '';
+	public var eventVal2:String = '';
+	
+	public var animSuffix:String = '';
+	public var gfNote:Bool = false;
+	public var noAnimation:Bool = false;
+	
+	public var hitHealth:Float = 0.023;
+	public var missHealth:Float = 0.0475;
+	public var noMissAnimation:Bool = false;
+	public var hitCausesMiss:Bool = false;
+	
+	public var lowPriority:Bool = false;
+	public var texture(default, set):String = null;
 
 	public var noteScore:Float = 1;
 
@@ -34,8 +60,45 @@ class Note extends FlxSprite
 	public static var GREEN_NOTE:Int = 2;
 	public static var BLUE_NOTE:Int = 1;
 	public static var RED_NOTE:Int = 3;
+	
+	
 
 	public var rating:String = "shit";
+	
+	private function set_texture(value:String):String {
+		if(texture != value) {
+			reloadNote('', value);
+		}
+		texture = value;
+		return value;
+	}
+	
+	private function set_noteType(value:String):String {
+		if(noteData > -1 && noteType != value) {
+			switch(value) {
+				case 'Hurt Note':
+					ignoreNote = mustPress;
+					reloadNote('HURT');
+					lowPriority = true;
+
+					if(isSustainNote) {
+						missHealth = 0.1;
+					} else {
+						missHealth = 0.3;
+					}
+					hitCausesMiss = true;
+				case 'Alt Animation':
+					animSuffix = '-alt';
+				case 'No Animation':
+					noAnimation = true;
+					noMissAnimation = true;
+				case 'GF Sing':
+					gfNote = true;
+			}
+			noteType = value;
+		}
+		return value;
+	}
 
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?inCharter:Bool = false)
 	{
@@ -59,6 +122,19 @@ class Note extends FlxSprite
 			this.strumTime = 0;
 
 		this.noteData = noteData;
+		
+		if(noteData > -1) {
+			texture = '';
+			colorSwap = new ColorSwap();
+			shader = colorSwap.shader;
+
+			x += swagWidth * (noteData);
+			if(!isSustainNote && noteData > -1 && noteData < 4) { //Doing this 'if' check to fix the warnings on Senpai songs
+				var animToPlay:String = '';
+				animToPlay = colArray[noteData % 4];
+				animation.play(animToPlay + 'Scroll');
+			}
+		}
 
 		var daStage:String = PlayState.curStage;
 
