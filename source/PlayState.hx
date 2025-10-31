@@ -3630,7 +3630,7 @@ class PlayState extends MusicBeatState
 							boyfriend.holdTimer = 0;
 						}
 		
-						if(daNote.noteType == 'Hey!') {
+						if(note.noteType == 'Hey!') {
 							if(boyfriend.animOffsets.exists('hey')) {
 								boyfriend.playAnim('hey', true);
 								boyfriend.specialAnim = true;
