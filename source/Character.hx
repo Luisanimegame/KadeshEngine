@@ -146,7 +146,7 @@ class Character extends FlxSprite
 				if(json.healthbar_colors != null && json.healthbar_colors.length > 2)
 					healthColorArray = json.healthbar_colors;
 
-				antialiasing = !noAntialiasing;
+				antialiasing = false;
 				if(antialiasing) antialiasing = false;
 
 				animationsArray = json.animations;
