@@ -45,6 +45,8 @@ class Note extends FlxSprite
 	public var gfNote:Bool = false;
 	public var noAnimation:Bool = false;
 	
+	private var colArray:Array<String> = ['purple', 'blue', 'green', 'red'];
+	
 	public var hitHealth:Float = 0.023;
 	public var missHealth:Float = 0.0475;
 	public var noMissAnimation:Bool = false;
@@ -52,6 +54,8 @@ class Note extends FlxSprite
 	
 	public var lowPriority:Bool = false;
 	public var texture(default, set):String = null;
+	
+	public var ignoreNote:Bool = false;
 
 	public var noteScore:Float = 1;
 
@@ -67,7 +71,7 @@ class Note extends FlxSprite
 	
 	private function set_texture(value:String):String {
 		if(texture != value) {
-			reloadNote('', value);
+		// wtf
 		}
 		texture = value;
 		return value;
@@ -78,7 +82,7 @@ class Note extends FlxSprite
 			switch(value) {
 				case 'Hurt Note':
 					ignoreNote = mustPress;
-					reloadNote('HURT');
+					// reloadNote('HURT');
 					lowPriority = true;
 
 					if(isSustainNote) {
@@ -125,9 +129,7 @@ class Note extends FlxSprite
 		
 		if(noteData > -1) {
 			texture = '';
-			colorSwap = new ColorSwap();
-			shader = colorSwap.shader;
-
+			
 			x += swagWidth * (noteData);
 			if(!isSustainNote && noteData > -1 && noteData < 4) { //Doing this 'if' check to fix the warnings on Senpai songs
 				var animToPlay:String = '';
