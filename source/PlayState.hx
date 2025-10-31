@@ -1451,6 +1451,7 @@ class PlayState extends MusicBeatState
 
 				var newCharacter:String = event.value2;
 				addCharacterToList(newCharacter, charType);
+		}
 
 		if(!eventPushedMap.exists(event.event)) {
 			eventPushedMap.set(event.event, true);
