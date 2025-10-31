@@ -2326,7 +2326,7 @@ class PlayState extends MusicBeatState
 							
 							var altAnim:String = daNote.animSuffix;
 
-							if(noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+							if(daNote.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
 							dad.playAnim('hey', true);
 							dad.specialAnim = true;
 							dad.heyTimer = 0.6;
@@ -3630,7 +3630,7 @@ class PlayState extends MusicBeatState
 							boyfriend.holdTimer = 0;
 						}
 		
-						if(note.noteType == 'Hey!') {
+						if(daNote.noteType == 'Hey!') {
 							if(boyfriend.animOffsets.exists('hey')) {
 								boyfriend.playAnim('hey', true);
 								boyfriend.specialAnim = true;
