@@ -393,7 +393,13 @@ class PlayState extends MusicBeatState
 		    };
 		}
 		
-		defaultCamZoom = stageData.defaultZoom;
+		// === APLICA O ZOOM DO STAGE ===
+		if (stageData.defaultZoom != null && stageData.defaultZoom > 0) {
+		    defaultCamZoom = stageData.defaultZoom;
+		    FlxG.camera.zoom = defaultCamZoom;
+		    camHUD.zoom = defaultCamZoom;
+		}
+		
 		BF_X = stageData.bf[0];
 		BF_Y = stageData.bf[1];
 		GF_X = stageData.girl[0];
@@ -413,36 +419,26 @@ class PlayState extends MusicBeatState
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
 		
-		var frontList:Array<{spr:FlxSprite, front:String}> = [];
-
-		// === LOOP DO STAGE (graphic = pasta, image = arquivo) ===
+		var bgLayer:FlxSpriteGroup = new FlxSpriteGroup();
+		var midLayer:FlxSpriteGroup = new FlxSpriteGroup();
+		var frontLayer:FlxSpriteGroup = new FlxSpriteGroup();
+		
 		var objects:Array<Dynamic> = [];
 		if (stageData.objects != null && Std.isOfType(stageData.objects, Array)) {
 		    objects = cast stageData.objects;
 		}
 		
 		for (obj in objects) {
-		    var x:Float = 0;
-		    var y:Float = 0;
-		    var folder:String = "";
-		    var image:String = "";
-		    var scale:Float = 1;
-		    var scrollX:Float = 1;
-		    var scrollY:Float = 1;
-		    var antialiasing:Bool = true;
-		    var active:Bool = false;
-		    var front:Dynamic = false;
-		
-		    if (obj.x != null) x = obj.x;
-		    if (obj.y != null) y = obj.y;
-		    if (obj.graphic != null) folder = obj.graphic;
-		    if (obj.image != null) image = obj.image;
-		    if (obj.scale != null) scale = obj.scale;
-		    if (obj.scrollX != null) scrollX = obj.scrollX;
-		    if (obj.scrollY != null) scrollY = obj.scrollY;
-		    if (obj.antialiasing != null) antialiasing = obj.antialiasing;
-		    if (obj.active != null) active = obj.active;
-		    if (obj.front != null) front = obj.front;
+		    var x:Float = 0; if (obj.x != null) x = obj.x;
+		    var y:Float = 0; if (obj.y != null) y = obj.y;
+		    var folder:String = ""; if (obj.graphic != null) folder = obj.graphic;
+		    var image:String = ""; if (obj.image != null) image = obj.image;
+		    var scale:Float = 1; if (obj.scale != null) scale = obj.scale;
+		    var scrollX:Float = 1; if (obj.scrollX != null) scrollX = obj.scrollX;
+		    var scrollY:Float = 1; if (obj.scrollY != null) scrollY = obj.scrollY;
+		    var antialiasing:Bool = true; if (obj.antialiasing != null) antialiasing = obj.antialiasing;
+		    var active:Bool = false; if (obj.active != null) active = obj.active;
+		    var front:Dynamic = false; if (obj.front != null) front = obj.front;
 		
 		    var spr = new FlxSprite(x, y);
 		
@@ -453,16 +449,10 @@ class PlayState extends MusicBeatState
 		            spr.frames = Paths.getSparrowAtlas(path);
 		            var animList:Array<Dynamic> = cast obj.animations;
 		            for (anim in animList) {
-		                var name:String = "";
-		                var prefix:String = "";
-		                var fps:Int = 24;
-		                var loop:Bool = false;
-		
-		                if (anim.name != null) name = anim.name;
-		                if (anim.prefix != null) prefix = anim.prefix;
-		                if (anim.fps != null) fps = anim.fps;
-		                if (anim.loop != null) loop = anim.loop;
-		
+		                var name:String = ""; if (anim.name != null) name = anim.name;
+		                var prefix:String = ""; if (anim.prefix != null) prefix = anim.prefix;
+		                var fps:Int = 24; if (anim.fps != null) fps = anim.fps;
+		                var loop:Bool = false; if (anim.loop != null) loop = anim.loop;
 		                spr.animation.addByPrefix(name, prefix, fps, loop);
 		            }
 		            if (obj.defaultAnim != null && obj.defaultAnim != "") {
@@ -480,9 +470,19 @@ class PlayState extends MusicBeatState
 		    spr.updateHitbox();
 		
 		    if (front == false) {
-		        insert(0, spr);
+		        bgLayer.add(spr);  // Fundo
 		    } else {
-		        frontList.push({spr: spr, front: Std.string(front)});
+		        var who:String = Std.string(front).toLowerCase();
+		        switch (who) {
+		            case 'gf', 'girlfriend':
+		                midLayer.add(spr);  // Entre GF e DAD/BF
+		            case 'dad', 'opponent':
+		                midLayer.add(spr);  // Entre DAD e BF
+		            case 'bf', 'boyfriend':
+		                frontLayer.add(spr);  // Na frente do BF
+		            default:
+		                frontLayer.add(spr);  // Qualquer outro = frente
+		        }
 		    }
 		}
 
@@ -542,23 +542,12 @@ class PlayState extends MusicBeatState
 
 		if (!PlayStateChangeables.Optimize)
 		{
-		    add(gfGroup);
-		    add(dadGroup);
-		    add(boyfriendGroup);
-		
-		    for (f in frontList) {
-		        var who:String = f.front.toLowerCase();
-		        switch (who) {
-		            case 'gf', 'girlfriend':
-		                insert(members.indexOf(gfGroup) + 1, f.spr);
-		            case 'dad', 'opponent':
-		                insert(members.indexOf(dadGroup) + 1, f.spr);
-		            case 'bf', 'boyfriend':
-		                insert(members.indexOf(boyfriendGroup) + 1, f.spr);
-		            default:
-		                add(f.spr);
-		        }
-		    }
+		    add(bgLayer);
+			add(gfGroup);
+			add(dadGroup);
+			add(boyfriendGroup);
+			add(midLayer);
+			add(frontLayer);
 		}
 
 
