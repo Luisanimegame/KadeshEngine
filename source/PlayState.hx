@@ -214,6 +214,7 @@ class PlayState extends MusicBeatState
 	public var defaultCamZoom:Float = 1.05;
 
 	public static var daPixelZoom:Float = 6;
+	private var singAnimations:Array<String> = ['singLEFT', 'singDOWN', 'singUP', 'singRIGHT'];
 
 	public static var theFunne:Bool = true;
 	var funneEffect:FlxSprite;
@@ -2144,14 +2145,14 @@ class PlayState extends MusicBeatState
 					{
 						if (SONG.song != 'Tutorial')
 							camZooming = true;
+							
+							var altAnim:String = note.animSuffix;
 
 							if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
 							dad.playAnim('hey', true);
 							dad.specialAnim = true;
 							dad.heyTimer = 0.6;
 						} else if(!note.noAnimation) {
-							var altAnim:String = note.animSuffix;
-				
 							if (SONG.notes[curSection] != null)
 							{
 								if (SONG.notes[curSection].altAnim) {

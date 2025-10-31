@@ -9,7 +9,7 @@ using StringTools;
 
 typedef StageFile = {
 	var directory:String;
-	var defaultZoom:Float;
+	var zoom:Float;
 	
 	var bf:Array<Dynamic>;
 	var girl:Array<Dynamic>;
@@ -17,8 +17,6 @@ typedef StageFile = {
 	
 	var bf_cam:Array<Float>;
 	var dad_cam:Array<Float>;
-	
-	var objects:Array<Dynamic>;
 }
 
 class StageData {
