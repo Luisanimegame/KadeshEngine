@@ -2145,19 +2145,18 @@ class PlayState extends MusicBeatState
 						if (SONG.song != 'Tutorial')
 							camZooming = true;
 
-						var altAnim:String = "";
-	
-						if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
-						dad.playAnim('hey', true);
-						dad.specialAnim = true;
-						dad.heyTimer = 0.6;
-					} else if(!note.noAnimation) {
-						var altAnim:String = note.animSuffix;
-			
-						if (SONG.notes[curSection] != null)
-						{
-							if (SONG.notes[curSection].altAnim) {
-								altAnim = '-alt';
+							if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+							dad.playAnim('hey', true);
+							dad.specialAnim = true;
+							dad.heyTimer = 0.6;
+						} else if(!note.noAnimation) {
+							var altAnim:String = note.animSuffix;
+				
+							if (SONG.notes[curSection] != null)
+							{
+								if (SONG.notes[curSection].altAnim) {
+									altAnim = '-alt';
+								}
 							}
 						}
 	
