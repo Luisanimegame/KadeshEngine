@@ -3240,6 +3240,8 @@ class PlayState extends MusicBeatState
 					// PRESSES, check for note hits
 					if (pressArray.contains(true) && generatedMusic)
 					{
+						boyfriend.holdTimer = 0;
+					
 						var possibleNotes:Array<Note> = []; // notes that can be hit
 						var directionList:Array<Int> = []; // directions that can be hit
 						var dumbNotes:Array<Note> = []; // notes to kill later
@@ -3275,12 +3277,6 @@ class PlayState extends MusicBeatState
 										}
 								}
 						});
-						else if (boyfriend.animation.curAnim != null && boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 / FlxG.sound.music.pitch) * boyfriend.singDuration && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss'))
-						{
-							boyfriend.dance();
-							//boyfriend.animation.curAnim.finish();
-						}
-						} 
 
 						for (note in dumbNotes)
 						{
