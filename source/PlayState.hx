@@ -2146,13 +2146,13 @@ class PlayState extends MusicBeatState
 						if (SONG.song != 'Tutorial')
 							camZooming = true;
 							
-							var altAnim:String = note.animSuffix;
+							var altAnim:String = daNote.animSuffix;
 
 							if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
 							dad.playAnim('hey', true);
 							dad.specialAnim = true;
 							dad.heyTimer = 0.6;
-						} else if(!note.noAnimation) {
+						} else if(!daNote.noAnimation) {
 							if (SONG.notes[curSection] != null)
 							{
 								if (SONG.notes[curSection].altAnim) {
