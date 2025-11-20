@@ -2333,11 +2333,10 @@ class PlayState extends MusicBeatState
 							if(daNote.isSustainNote && !daNote.animation.curAnim.name.endsWith('end')) {
 								time += 0.15;
 							}
-							StrumPlayAnim(true, Std.int(Math.abs(daNote.noteData)), time);
-							note.hitByOpponent = true;
+							daNote.hitByOpponent = true;
 						}
 						
-							if(!daNote.blockHit && daNote.mustPress && cpuControlled && daNote.canBeHit) {
+							if(!daNote.blockHit && daNote.mustPress && daNote.canBeHit) {
 							if(daNote.isSustainNote) {
 								if(daNote.canBeHit) {
 									goodNoteHit(daNote);
@@ -3179,8 +3178,12 @@ class PlayState extends MusicBeatState
 
 		// THIS FUNCTION JUST FUCKS WIT HELD NOTES AND BOTPLAY/REPLAY (also gamepad shit)
 
+		public var strumsBlocked:Array<Bool> = [];
 		private function keyShit():Void // I've invested in emma stocks
 			{
+				var lastTime:Float = Conductor.songPosition;
+				var canMiss:Bool = !FlxG.save.data.ghost;
+				
 				// control arrays, order L D R U
 				var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
 				var pressArray:Array<Bool> = [
@@ -3226,6 +3229,7 @@ class PlayState extends MusicBeatState
 					    var dumbNotes:Array<Note> = [];
 					    var directionsAccounted:Array<Bool> = [false,false,false,false];
 					
+						var sortedNotesList:Array<Note> = [];
 					    notes.forEachAlive(function(daNote:Note)
 						{
 							if (strumsBlocked[daNote.noteData] != true && daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustainNote && !daNote.blockHit)
@@ -3279,13 +3283,13 @@ class PlayState extends MusicBeatState
 				{
 					notes.forEachAlive(function(daNote:Note)
 					{
-						if (strumsBlocked[daNote.noteData] != true && daNote.isSustainNote && parsedHoldArray[daNote.noteData] && daNote.canBeHit
+						if (strumsBlocked[daNote.noteData] != true && daNote.isSustainNote && noteBools[daNote.noteData] && daNote.canBeHit
 						&& daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !daNote.blockHit) {
 							goodNoteHit(daNote);
 						}
 					});
-		
-					if (parsedHoldArray.contains(true) && !endingSong) {
+					
+					if (noteBools.contains(true) && !endingSong) {
 					}
 					else if (boyfriend.animation.curAnim != null && boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 / FlxG.sound.music.pitch) * boyfriend.singDuration && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss'))
 					{
@@ -3561,14 +3565,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 			}
-
-			if(PlayStateChangeables.botPlay) {
-				var time:Float = 0.15;
-				if(note.isSustainNote && !note.animation.curAnim.name.endsWith('end')) {
-					time += 0.15;
-				}
-				StrumPlayAnim(false, Std.int(Math.abs(note.noteData)), time);
-			} else {
+			
 				var spr = playerStrums.members[note.noteData];
 				if(spr != null)
 				{
