@@ -1202,7 +1202,6 @@ class PlayState extends MusicBeatState
 			var coolNote = dataNotes[0];
 
 			var noteDiff:Float = -(coolNote.strumTime - Conductor.songPosition);
-			goodNoteHit(daNote);
 			ana.hit = true;
 			ana.hitJudge = Ratings.CalculateRating(noteDiff, Math.floor((PlayStateChangeables.safeFrames / 60) * 1000));
 			ana.nearestNote = [coolNote.strumTime,coolNote.noteData,coolNote.sustainLength];
@@ -2338,6 +2337,16 @@ class PlayState extends MusicBeatState
 							note.hitByOpponent = true;
 						}
 						
+							if(!daNote.blockHit && daNote.mustPress && cpuControlled && daNote.canBeHit) {
+							if(daNote.isSustainNote) {
+								if(daNote.canBeHit) {
+									goodNoteHit(daNote);
+								}
+							} else if(daNote.strumTime <= Conductor.songPosition || daNote.isSustainNote) {
+								goodNoteHit(daNote);
+							}
+						}
+						
 						if (FlxG.save.data.cpuStrums)
 						{
 							cpuStrums.forEach(function(spr:FlxSprite)
@@ -3252,11 +3261,14 @@ class PlayState extends MusicBeatState
 							}
 						}
 						else{
-							callOnLuas('onGhostTap', [key]);
 							if (canMiss) {
 								noteMissPress(key);
 							}
 						}
+						
+						// huh?
+						Conductor.songPosition = lastTime;
+					}
 
 					if (!loadRep)
 						for (i in anas)
@@ -3298,6 +3310,16 @@ class PlayState extends MusicBeatState
 					else
 						spr.centerOffsets();
 				});
+			}
+			
+			function sortHitNotes(a:Note, b:Note):Int
+			{
+				if (a.lowPriority && !b.lowPriority)
+					return 1;
+				else if (!a.lowPriority && b.lowPriority)
+					return -1;
+		
+				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
 			}
 
 			public function findByTime(time:Float):Array<Dynamic>
@@ -3384,16 +3406,11 @@ class PlayState extends MusicBeatState
 			// FlxG.sound.play(Paths.sound('missnote1'), 1, false);
 			// FlxG.log.add('played imss note');
 
-			switch (direction)
+			var char:Character = boyfriend;
+			if(char != null && !daNote.noMissAnimation && char.hasMissAnimations)
 			{
-				case 0:
-					boyfriend.playAnim('singLEFTmiss', true);
-				case 1:
-					boyfriend.playAnim('singDOWNmiss', true);
-				case 2:
-					boyfriend.playAnim('singUPmiss', true);
-				case 3:
-					boyfriend.playAnim('singRIGHTmiss', true);
+				var animToPlay:String = singAnimations[Std.int(Math.abs(daNote.noteData))] + 'miss' + daNote.animSuffix;
+				char.playAnim(animToPlay, true);
 			}
 
 			#if windows
@@ -3403,6 +3420,34 @@ class PlayState extends MusicBeatState
 
 
 			updateAccuracy();
+		}
+	}
+	
+	function noteMissPress(direction:Int = 1):Void //You pressed a key when there was no notes to press for this key
+	{
+		if (!boyfriend.stunned)
+		{
+			health -= 0.05;
+			
+			if (combo > 5 && gf != null && gf.animOffsets.exists('sad'))
+			{
+				gf.playAnim('sad');
+			}
+			
+			if (FlxG.save.data.accuracyMod == 1)
+				totalNotesHit -= 1;
+			
+			songScore -= 10;
+
+			combo = 0;
+			misses++;
+			
+			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+			
+			if(boyfriend.hasMissAnimations) {
+				boyfriend.playAnim(singAnimations[Std.int(Math.abs(direction))] + 'miss', true);
+			}
+			vocals.volume = 0;
 		}
 	}
 
