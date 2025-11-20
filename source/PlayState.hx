@@ -3566,12 +3566,12 @@ class PlayState extends MusicBeatState
 				}
 			}
 			
-				var spr = playerStrums.members[note.noteData];
-				if(spr != null)
-				{
-					spr.playAnim('confirm', true);
-				}
+			var spr = playerStrums.members[note.noteData];
+			if(spr != null)
+			{
+				spr.playAnim('confirm', true);
 			}
+				
 			note.wasGoodHit = true;
 			vocals.volume = 1;
 
