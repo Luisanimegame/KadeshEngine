@@ -3566,11 +3566,23 @@ class PlayState extends MusicBeatState
 				}
 			}
 			
-			var spr = playerStrums.members[note.noteData];
-			if(spr != null)
+			
+			if(!loadRep && note.mustPress)
 			{
-				spr.playAnim('confirm', true);
+				var array = [note.strumTime,note.sustainLength,note.noteData,noteDiff];
+				if (note.isSustainNote)
+					array[1] = -1;
+				saveNotes.push(array);
+				saveJudge.push(note.rating);
 			}
+			
+			playerStrums.forEach(function(spr:FlxSprite)
+			{
+				if (Math.abs(note.noteData) == spr.ID)
+				{
+					spr.animation.play('confirm', true);
+				}
+			});
 				
 			note.wasGoodHit = true;
 			vocals.volume = 1;
@@ -3585,6 +3597,8 @@ class PlayState extends MusicBeatState
 				notes.remove(note, true);
 				note.destroy();
 			}
+			
+			updateAccuracy();
 	}
 		
 
