@@ -3184,6 +3184,9 @@ class PlayState extends MusicBeatState
 				var lastTime:Float = Conductor.songPosition;
 				var canMiss:Bool = !FlxG.save.data.ghost;
 				
+				var eventKey:FlxKey = event.keyCode;
+				var key:Int = getKeyFromEvent(eventKey);
+				
 				// control arrays, order L D R U
 				var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
 				var pressArray:Array<Bool> = [
@@ -3228,6 +3231,9 @@ class PlayState extends MusicBeatState
 					    var directionList:Array<Int> = [];
 					    var dumbNotes:Array<Note> = [];
 					    var directionsAccounted:Array<Bool> = [false,false,false,false];
+					
+						var notesStopped:Bool = false;
+						var pressNotes:Array<Note> = [];
 					
 						var sortedNotesList:Array<Note> = [];
 					    notes.forEachAlive(function(daNote:Note)
@@ -3514,6 +3520,8 @@ class PlayState extends MusicBeatState
 
 	function goodNoteHit(note:Note):Void
 	{
+		var noteDiff:Float = -(note.strumTime - Conductor.songPosition);
+	
 		if (!note.wasGoodHit)
 		{
 			if ((note.ignoreNote || note.hitCausesMiss)) return;
