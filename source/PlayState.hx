@@ -3179,145 +3179,149 @@ class PlayState extends MusicBeatState
 		// THIS FUNCTION JUST FUCKS WIT HELD NOTES AND BOTPLAY/REPLAY (also gamepad shit)
 
 		public var strumsBlocked:Array<Bool> = [];
-		private function keyShit():Void // I've invested in emma stocks
-			{
-				var lastTime:Float = Conductor.songPosition;
-				var canMiss:Bool = !FlxG.save.data.ghost;
-				
-				// control arrays, order L D R U
-				var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
-				var pressArray:Array<Bool> = [
-					controls.LEFT_P,
-					controls.DOWN_P,
-					controls.UP_P,
-					controls.RIGHT_P
-				];
-				var releaseArray:Array<Bool> = [
-					controls.LEFT_R,
-					controls.DOWN_R,
-					controls.UP_R,
-					controls.RIGHT_R
-				];
-				#if windows
-				if (luaModchart != null){
-				if (controls.LEFT_P){luaModchart.executeState('keyPressed',["left"]);};
-				if (controls.DOWN_P){luaModchart.executeState('keyPressed',["down"]);};
-				if (controls.UP_P){luaModchart.executeState('keyPressed',["up"]);};
-				if (controls.RIGHT_P){luaModchart.executeState('keyPressed',["right"]);};
-				};
-				#end
-		 
-				
-				// Prevent player input if botplay is on
-				if(PlayStateChangeables.botPlay)
-				{
-					holdArray = [false, false, false, false];
-					pressArray = [false, false, false, false];
-					releaseArray = [false, false, false, false];
-				} 
-
-				var anas:Array<Ana> = [null,null,null,null];
-
-				for (i in 0...pressArray.length)
-					if (pressArray[i])
-						anas[i] = new Ana(Conductor.songPosition, null, false, "miss", i);
-		 
-					// PRESSES, check for note hits
-					if (pressArray.contains(true) && generatedMusic) {
-					    var possibleNotes:Array<Note> = [];
-					    var directionList:Array<Int> = [];
-					    var dumbNotes:Array<Note> = [];
-					    var directionsAccounted:Array<Bool> = [false,false,false,false];
-					
-						var notesStopped:Bool = false;
-						var pressNotes:Array<Note> = [];
-					
-						var sortedNotesList:Array<Note> = [];
-					    notes.forEachAlive(function(daNote:Note)
-						{
-							if (strumsBlocked[daNote.noteData] != true && daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustainNote && !daNote.blockHit)
-							{
-								if (daNote.noteData == i)
-								{
-									sortedNotesList.push(daNote);
-									//notesDatas.push(daNote.noteData);
-								}
-								canMiss = true;
-							}
-						});
-						sortedNotesList.sort(sortHitNotes);
+		private function keyShit():Void
+		{
+		    // Control arrays (L D U R)
+		    var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
+		    var pressArray:Array<Bool> = [controls.LEFT_P, controls.DOWN_P, controls.UP_P, controls.RIGHT_P];
+		    var releaseArray:Array<Bool> = [controls.LEFT_R, controls.DOWN_R, controls.UP_R, controls.RIGHT_R];
 		
-						if (sortedNotesList.length > 0) {
-							for (epicNote in sortedNotesList)
-							{
-								for (doubleNote in pressNotes) {
-									if (Math.abs(doubleNote.strumTime - epicNote.strumTime) < 1) {
-										doubleNote.kill();
-										notes.remove(doubleNote, true);
-										doubleNote.destroy();
-									} else
-										notesStopped = true;
-								}
+		    // Atualiza noteBools (equivalente ao parsedHoldArray do Psych)
+		    for (i in 0...4)
+		        noteBools[i] = holdArray[i];
 		
-								// eee jack detection before was not super good
-								if (!notesStopped) {
-									goodNoteHit(epicNote);
-									pressNotes.push(epicNote);
-								}
+		    // Modchart key press
+		    #if windows
+		    if (luaModchart != null)
+		    {
+		        if (controls.LEFT_P) luaModchart.executeState('keyPressed', ["left"]);
+		        if (controls.DOWN_P) luaModchart.executeState('keyPressed', ["down"]);
+		        if (controls.UP_P)   luaModchart.executeState('keyPressed', ["up"]);
+		        if (controls.RIGHT_P) luaModchart.executeState('keyPressed', ["right"]);
+		    }
+		    #end
 		
-							}
-						}
-						else{
-							if (canMiss) {
-						        noteMissPress(i);
-						    }
-						}
-						
-						// huh?
-						Conductor.songPosition = lastTime;
-					}
-
-					if (!loadRep)
-						for (i in anas)
-							if (i != null)
-								replayAna.anaArray.push(i); // put em all there
-
-				if (startedCountdown && !boyfriend.stunned && generatedMusic)
-				{
-					notes.forEachAlive(function(daNote:Note)
-					{
-						if (strumsBlocked[daNote.noteData] != true && daNote.isSustainNote && noteBools[daNote.noteData] && daNote.canBeHit
-						&& daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !daNote.blockHit) {
-							goodNoteHit(daNote);
-						}
-					});
-					
-					if (noteBools.contains(true) && !endingSong) {
-					}
-					else if (boyfriend.animation.curAnim != null && boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 / FlxG.sound.music.pitch) * boyfriend.singDuration && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss'))
-					{
-						boyfriend.dance();
-						//boyfriend.animation.curAnim.finish();
-					}
-				}
-		 
-				playerStrums.forEach(function(spr:FlxSprite)
-				{
-					if (pressArray[spr.ID] && spr.animation.curAnim.name != 'confirm')
-						spr.animation.play('pressed');
-					if (!holdArray[spr.ID])
-						spr.animation.play('static');
-		 
-					if (spr.animation.curAnim.name == 'confirm' && !curStage.startsWith('school'))
-					{
-						spr.centerOffsets();
-						spr.offset.x -= 13;
-						spr.offset.y -= 13;
-					}
-					else
-						spr.centerOffsets();
-				});
-			}
+		    // Desativa input do jogador se botplay estiver on
+		    if (PlayStateChangeables.botPlay)
+		    {
+		        holdArray = [false, false, false, false];
+		        pressArray = [false, false, false, false];
+		        releaseArray = [false, false, false, false];
+		    }
+		
+		    var canMiss:Bool = !FlxG.save.data.ghost;
+		
+		    // Replay stuff
+		    var anas:Array<Ana> = [null, null, null, null];
+		    if (!loadRep)
+		    {
+		        for (i in 0...pressArray.length)
+		            if (pressArray[i])
+		                anas[i] = new Ana(Conductor.songPosition, null, false, "miss", i);
+		    }
+		
+		    // PRESS NOTES (normal notes)
+		    if (pressArray.contains(true) && generatedMusic)
+		    {
+		        var possibleNotes:Array<Note> = [];
+		        var pressNotes:Array<Note> = [];
+		
+		        notes.forEachAlive(function(daNote:Note)
+		        {
+		            if (daNote.mustPress && daNote.canBeHit && !daNote.wasGoodHit && !daNote.tooLate && !daNote.isSustainNote && !daNote.blockHit && strumsBlocked[daNote.noteData] != true)
+		            {
+		                possibleNotes.push(daNote);
+		            }
+		        });
+		
+		        possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+		
+		        if (possibleNotes.length > 0)
+		        {
+		            for (epicNote in possibleNotes)
+		            {
+		                var doubleFound:Bool = false;
+		                for (doubleNote in pressNotes)
+		                {
+		                    if (Math.abs(doubleNote.strumTime - epicNote.strumTime) < 1)
+		                    {
+		                        doubleNote.kill();
+		                        notes.remove(doubleNote, true);
+		                        doubleNote.destroy();
+		                        doubleFound = true;
+		                    }
+		                }
+		
+		                if (!doubleFound)
+		                {
+		                    for (i in 0...pressArray.length)
+		                    {
+		                        if (pressArray[i] && epicNote.noteData == i)
+		                        {
+		                            goodNoteHit(epicNote);
+		                            pressNotes.push(epicNote);
+		                        }
+		                    }
+		                }
+		            }
+		        }
+		        else if (canMiss)
+		        {
+		            for (i in 0...pressArray.length)
+		            {
+		                if (pressArray[i])
+		                    noteMissPress(i);
+		            }
+		        }
+		    }
+		
+		    // SUSTAIN NOTES
+		    if (generatedMusic && startedCountdown && !boyfriend.stunned)
+		    {
+		        notes.forEachAlive(function(daNote:Note)
+		        {
+		            if (daNote.mustPress && daNote.isSustainNote && noteBools[daNote.noteData] && daNote.canBeHit && !daNote.wasGoodHit && !daNote.tooLate && !daNote.blockHit && strumsBlocked[daNote.noteData] != true)
+		            {
+		                goodNoteHit(daNote);
+		            }
+		        });
+		    }
+		
+		    // Replay ana
+		    if (!loadRep)
+		    {
+		        for (ana in anas)
+		            if (ana != null)
+		                replayAna.anaArray.push(ana);
+		    }
+		
+		    // Boyfriend idle quando não segura sustain
+		    if (noteBools.contains(true) && boyfriend.holdTimer > Conductor.stepCrochet * 0.0011 * boyfriend.singDuration
+		        && boyfriend.animation.curAnim != null && boyfriend.animation.curAnim.name.startsWith('sing')
+		        && !boyfriend.animation.curAnim.name.endsWith('miss'))
+		    {
+		        boyfriend.dance();
+		    }
+		
+		    // Strum animations
+		    playerStrums.forEach(function(spr:FlxSprite)
+		    {
+		        if (pressArray[spr.ID] && spr.animation.curAnim.name != 'confirm')
+		            spr.animation.play('pressed');
+		
+		        if (!holdArray[spr.ID])
+		            spr.animation.play('static');
+		
+		        if (spr.animation.curAnim.name == 'confirm' && !curStage.startsWith('school'))
+		        {
+		            spr.centerOffsets();
+		            spr.offset.x -= 13;
+		            spr.offset.y -= 13;
+		        }
+		        else
+		            spr.centerOffsets();
+		    });
+		}
 			
 			function sortHitNotes(a:Note, b:Note):Int
 			{
