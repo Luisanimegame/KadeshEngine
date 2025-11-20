@@ -3184,9 +3184,6 @@ class PlayState extends MusicBeatState
 				var lastTime:Float = Conductor.songPosition;
 				var canMiss:Bool = !FlxG.save.data.ghost;
 				
-				var eventKey:FlxKey = event.keyCode;
-				var key:Int = getKeyFromEvent(eventKey);
-				
 				// control arrays, order L D R U
 				var holdArray:Array<Bool> = [controls.LEFT, controls.DOWN, controls.UP, controls.RIGHT];
 				var pressArray:Array<Bool> = [
@@ -3240,7 +3237,7 @@ class PlayState extends MusicBeatState
 						{
 							if (strumsBlocked[daNote.noteData] != true && daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustainNote && !daNote.blockHit)
 							{
-								if(daNote.noteData == key)
+								if (daNote.noteData == i)
 								{
 									sortedNotesList.push(daNote);
 									//notesDatas.push(daNote.noteData);
@@ -3272,8 +3269,8 @@ class PlayState extends MusicBeatState
 						}
 						else{
 							if (canMiss) {
-								noteMissPress(key);
-							}
+						        noteMissPress(i);
+						    }
 						}
 						
 						// huh?
