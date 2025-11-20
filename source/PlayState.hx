@@ -2302,9 +2302,40 @@ class PlayState extends MusicBeatState
 							}
 						}
 						
-						if (!daNote.mustPress && !daNote.wasGoodHit)
+						if (!daNote.mustPress && daNote.wasGoodHit)
 						{
-						    opponentNoteHit(daNote);
+							if (SONG.song != 'Tutorial')
+								camZooming = true;
+								
+								var altAnim:String = daNote.animSuffix;
+	
+								if(daNote.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
+								dad.playAnim('hey', true);
+								dad.specialAnim = true;
+								dad.heyTimer = 0.6;
+							} else if(!daNote.noAnimation) {
+								if (SONG.notes[curSection] != null)
+								{
+									if (SONG.notes[curSection].altAnim) {
+										altAnim = '-alt';
+									}
+								}
+							
+							var char:Character = dad;
+							var animToPlay:String = singAnimations[Std.int(Math.abs(daNote.noteData))] + altAnim;
+				
+							if(char != null)
+							{
+								char.playAnim(animToPlay, true);
+								char.holdTimer = 0;
+							}
+							
+							var time:Float = 0.15;
+							if(daNote.isSustainNote && !daNote.animation.curAnim.name.endsWith('end')) {
+								time += 0.15;
+							}
+							StrumPlayAnim(true, Std.int(Math.abs(daNote.noteData)), time);
+							note.hitByOpponent = true;
 						}
 						
 						if (FlxG.save.data.cpuStrums)
@@ -3430,53 +3461,6 @@ class PlayState extends MusicBeatState
 			var noteDiff:Float = -(note.strumTime - Conductor.songPosition);
 
 			note.rating = Ratings.CalculateRating(noteDiff, Math.floor((PlayStateChangeables.safeFrames / 60) * 1000));
-		}
-		
-		function opponentNoteHit(note:Note):Void
-		{
-			if (Paths.formatToSongPath(SONG.song) != 'tutorial')
-				camZooming = true;
-	
-			if(note.noteType == 'Hey!' && dad.animOffsets.exists('hey')) {
-				dad.playAnim('hey', true);
-				dad.specialAnim = true;
-				dad.heyTimer = 0.6;
-			} else if(!note.noAnimation) {
-				var altAnim:String = note.animSuffix;
-	
-				if (SONG.notes[curSection] != null)
-				{
-					if (SONG.notes[curSection].altAnim) {
-						altAnim = '-alt';
-					}
-				}
-	
-				var char:Character = dad;
-				var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))] + altAnim;
-	
-				if(char != null)
-				{
-					char.playAnim(animToPlay, true);
-					char.holdTimer = 0;
-				}
-			}
-	
-			if (SONG.needsVoices)
-				vocals.volume = 1;
-	
-			var time:Float = 0.15;
-			if(note.isSustainNote && !note.animation.curAnim.name.endsWith('end')) {
-				time += 0.15;
-			}
-			StrumPlayAnim(true, Std.int(Math.abs(note.noteData)), time);
-			note.hitByOpponent = true;
-	
-			if (!note.isSustainNote)
-			{
-				note.kill();
-				notes.remove(note, true);
-				note.destroy();
-			}
 		}
 
 	function goodNoteHit(note:Note):Void
