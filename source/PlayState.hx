@@ -2302,19 +2302,22 @@ class PlayState extends MusicBeatState
 						}
 		
 	
-						if (!daNote.mustPress && daNote.wasGoodHit)
+						if (daNote.mustPress && daNote.canBeHit && !daNote.blockHit && !daNote.wasGoodHit)
 						{
-							opponentNoteHit(daNote);
+						    if (daNote.isSustainNote)
+						    {
+						        goodNoteHit(daNote);
+						    }
+						    else if (daNote.strumTime <= Conductor.songPosition + Conductor.safeZoneOffset)
+						    {
+						        goodNoteHit(daNote);
+						    }
 						}
 						
-						if(!daNote.blockHit && daNote.mustPress && daNote.canBeHit) {
-							if(daNote.isSustainNote) {
-								if(daNote.canBeHit) {
-									goodNoteHit(daNote);
-								}
-							} else if(daNote.strumTime <= Conductor.songPosition || daNote.isSustainNote) {
-								goodNoteHit(daNote);
-							}
+						if (!daNote.mustPress && !daNote.wasGoodHit)
+						{
+						    opponentNoteHit(daNote);
+						    daNote.wasGoodHit = true;
 						}
 						
 						if (FlxG.save.data.cpuStrums)
