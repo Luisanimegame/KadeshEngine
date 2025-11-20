@@ -1202,6 +1202,7 @@ class PlayState extends MusicBeatState
 			var coolNote = dataNotes[0];
 
 			var noteDiff:Float = -(coolNote.strumTime - Conductor.songPosition);
+			goodNoteHit(daNote);
 			ana.hit = true;
 			ana.hitJudge = Ratings.CalculateRating(noteDiff, Math.floor((PlayStateChangeables.safeFrames / 60) * 1000));
 			ana.nearestNote = [coolNote.strumTime,coolNote.noteData,coolNote.sustainLength];
@@ -2300,22 +2301,10 @@ class PlayState extends MusicBeatState
 								}
 							}
 						}
-		
-	
-						if (daNote.isSustainNote)
-						{
-						    if (daNote.canBeHit)
-						        goodNoteHit(daNote);
-						}
-						else if (daNote.strumTime <= Conductor.songPosition + Conductor.safeZoneOffset)
-						{
-						    goodNoteHit(daNote);
-						}
 						
 						if (!daNote.mustPress && !daNote.wasGoodHit)
 						{
 						    opponentNoteHit(daNote);
-						    daNote.wasGoodHit = true;
 						}
 						
 						if (FlxG.save.data.cpuStrums)
