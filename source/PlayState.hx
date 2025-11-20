@@ -2316,8 +2316,6 @@ class PlayState extends MusicBeatState
 								goodNoteHit(daNote);
 							}
 						}
-						});
-			}
 						
 						if (FlxG.save.data.cpuStrums)
 						{
@@ -3573,7 +3571,6 @@ class PlayState extends MusicBeatState
 				notes.remove(note, true);
 				note.destroy();
 			}
-		}
 	}
 		
 
