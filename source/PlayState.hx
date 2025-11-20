@@ -3495,7 +3495,7 @@ class PlayState extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
-			if((note.ignoreNote || note.hitCausesMiss)) return;
+			if (note.ignoreNote || note.hitCausesMiss) return;
 
 			if(note.hitCausesMiss) {
 				noteMiss(note);
