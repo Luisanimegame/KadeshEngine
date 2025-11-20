@@ -2302,16 +2302,14 @@ class PlayState extends MusicBeatState
 						}
 		
 	
-						if (daNote.mustPress && daNote.canBeHit && !daNote.blockHit && !daNote.wasGoodHit)
+						if (daNote.isSustainNote)
 						{
-						    if (daNote.isSustainNote)
-						    {
+						    if (daNote.canBeHit)
 						        goodNoteHit(daNote);
-						    }
-						    else if (daNote.strumTime <= Conductor.songPosition + Conductor.safeZoneOffset)
-						    {
-						        goodNoteHit(daNote);
-						    }
+						}
+						else if (daNote.strumTime <= Conductor.songPosition + Conductor.safeZoneOffset)
+						{
+						    goodNoteHit(daNote);
 						}
 						
 						if (!daNote.mustPress && !daNote.wasGoodHit)
